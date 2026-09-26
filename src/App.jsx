@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import SidebarNav from './components/SidebarNav';
 import TopHeader from './components/TopHeader';
 import Dashboard from './components/Dashboard';
 import CaseWorkspace from './components/CaseWorkspace';
 import DocumentLibrary from './components/DocumentLibrary';
+import IntegrityVerificationView from './components/IntegrityVerificationView';
 import CreateCaseModal from './components/CreateCaseModal';
 import UploadModal from './components/UploadModal';
 import AuditTrailView from './components/AuditTrailView';
@@ -129,6 +130,18 @@ export default function App() {
 
   // Derived real metrics
   const integrityAlertCount = documents.filter(d => d.isTampered).length;
+
+  // RBAC Filtered Accessible Documents for the Current Officer
+  const accessibleDocuments = useMemo(() => {
+    const effectiveUser = currentUser || currentRole;
+    return documents.filter(d => {
+      if (d.caseId && !SharingService.canUserAccessCase(effectiveUser, d.caseId)) {
+        return false;
+      }
+      const check = SharingService.checkDocumentAccess(effectiveUser, d);
+      return check.allowed;
+    });
+  }, [documents, currentUser, currentRole]);
 
   // Authentication Handlers
   const handleLoginSuccess = async (user) => {
@@ -590,7 +603,7 @@ export default function App() {
   // Cryptographic Verification & Tamper Simulation
   const handleVerifyDoc = async (doc) => {
     try {
-      const res = await DocumentRepository.verifyDocumentIntegrity(doc.id);
+      const res = await DocumentRepository.verifyDocumentIntegrity(doc.id, currentUser || currentRole);
       await AuditRepository.logAuditEvent({
         actor: currentUser || currentRole,
         role: currentUser?.designation || currentRole?.designation,
@@ -902,107 +915,30 @@ export default function App() {
 
           {/* VIEW 4: INTEGRITY & VERIFICATION */}
           {currentView === 'integrity' && (
-            <div className="space-y-5">
-              <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-2xs">
-                <div className="flex items-center space-x-2">
-                  <span className="text-[11px] font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200 px-2 py-0.5 rounded-full">
-                    Cryptographic Integrity Health
-                  </span>
-                  <span className="text-xs text-slate-500 font-mono font-medium">BSA Sec 63</span>
-                </div>
-                <h1 className="text-2xl font-semibold tracking-tight text-slate-900 mt-1 flex items-center gap-2">
-                  <ShieldCheck className="w-5 h-5 text-emerald-600" />
-                  Independent Document Verification Suite
-                </h1>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  Inspect and mathematically verify any stored document against its anchored digital seal.
-                </p>
-              </div>
-
-              {documents.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {documents.map(doc => (
-                    <div key={doc.id} className="bg-white border border-slate-200 p-4 rounded-xl shadow-2xs space-y-3">
-                      <div className="flex items-start justify-between gap-2">
-                        <div>
-                          <span className="font-mono text-xs text-blue-700 font-medium bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200">
-                            #{doc.caseId}
-                          </span>
-                          <h3 className="text-base font-semibold text-slate-900 mt-1">
-                            {doc.name} <span className="font-mono text-xs text-slate-500 font-normal">({doc.currentVersion})</span>
-                          </h3>
-                        </div>
-
-                        {doc.isTampered ? (
-                          <span className="text-xs font-medium text-red-700 bg-red-50 border border-red-200 px-2 py-0.5 rounded-full animate-pulse">
-                            MISMATCH
-                          </span>
-                        ) : (
-                          <span className="text-xs font-medium text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
-                            VERIFIED
-                          </span>
-                        )}
-                      </div>
-
-                      <div className="p-2.5 bg-slate-50 rounded-lg border border-slate-200 font-mono text-xs text-slate-700 break-all select-all font-normal">
-                        <span className="text-slate-400 font-medium block mb-0.5 font-sans text-xs">Anchored Digital Fingerprint:</span>
-                        {doc.storedHash ? `${doc.storedHash.slice(0, 16)}••••••••••••••••${doc.storedHash.slice(-8)}` : 'N/A'}
-                      </div>
-
-                      {doc.isTampered && (
-                        <div className="p-2.5 bg-red-50 rounded-lg border border-red-200 font-mono text-xs text-red-700 break-all select-all font-normal">
-                          <span className="text-red-500 font-medium block mb-0.5 font-sans text-xs">Corrupted Payload Fingerprint:</span>
-                          {doc.tamperedHash ? `${doc.tamperedHash.slice(0, 16)}••••••••••••••••${doc.tamperedHash.slice(-8)}` : 'Tampered'}
-                        </div>
-                      )}
-
-                      <div className="flex items-center justify-between pt-1 text-xs">
-                        {!doc.isTampered ? (
-                          <button
-                            onClick={() => handleSimulateTamper(doc)}
-                            className="text-xs text-red-600 hover:text-red-800 font-semibold inline-flex items-center gap-1"
-                          >
-                            <AlertTriangle className="w-3.5 h-3.5" />
-                            <span>Simulate Tamper</span>
-                          </button>
-                        ) : (
-                          <button
-                            onClick={() => handleRestoreDoc(doc)}
-                            className="text-xs text-emerald-600 hover:text-emerald-800 font-semibold inline-flex items-center gap-1"
-                          >
-                            <RotateCcw className="w-3.5 h-3.5" />
-                            <span>Restore Authentic</span>
-                          </button>
-                        )}
-
-                        <button
-                          onClick={() => handleVerifyDoc(doc)}
-                          className="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow-xs inline-flex items-center gap-1"
-                        >
-                          <ShieldCheck className="w-3.5 h-3.5" />
-                          <span>Run Live Check</span>
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-16 bg-white border border-slate-200 rounded-xl p-8 space-y-3">
-                  <ShieldCheck className="w-12 h-12 text-slate-300 mx-auto stroke-1" />
-                  <h3 className="text-lg font-semibold text-slate-800">No Documents to Verify</h3>
-                  <p className="text-sm text-slate-500 max-w-sm mx-auto font-normal">
-                    Upload documents into a case dossier to inspect and recalculate real digital fingerprints.
-                  </p>
-                  <button
-                    onClick={() => handleOpenUpload()}
-                    className="mt-2 inline-flex items-center space-x-1.5 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-xs font-semibold shadow-xs"
-                  >
-                    <Plus className="w-4 h-4" />
-                    <span>Upload Document</span>
-                  </button>
-                </div>
-              )}
-            </div>
+            <IntegrityVerificationView
+              documents={accessibleDocuments}
+              cases={cases}
+              auditLogs={auditLogs}
+              currentUser={currentUser}
+              currentRole={currentRole}
+              onVerifyDocument={handleVerifyDoc}
+              onSimulateTamper={handleSimulateTamper}
+              onRestoreDocument={handleRestoreDoc}
+              onSelectCase={(caseId) => {
+                const targetId = String(caseId).replace(/^#/, '');
+                const matched = cases.find(c => String(c.caseNumber || '').replace(/^#/, '') === targetId || c.id === targetId);
+                if (matched) {
+                  setSelectedCase(matched);
+                  setCurrentView('cases');
+                } else {
+                  setCurrentView('cases');
+                }
+              }}
+              onViewDocument={(doc) => {
+                setSelectedDoc(doc);
+                setCurrentView('documents');
+              }}
+            />
           )}
 
           {/* VIEW 5: AUDIT TRAIL */}

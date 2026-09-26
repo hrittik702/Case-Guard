@@ -15,6 +15,7 @@ export default function UnsupportedFileViewer({
   filename, 
   mimeType, 
   isLegacy = false, 
+  customMessage,
   onDownload 
 }) {
   const ext = getFileExtension(filename).toUpperCase();
@@ -55,11 +56,15 @@ export default function UnsupportedFileViewer({
         <div className="p-3.5 bg-slate-900 border border-slate-800 rounded-xl space-y-2 text-xs">
           <div className="flex items-center space-x-1.5 text-amber-400 font-medium text-xs uppercase tracking-wide">
             <Info className="w-3.5 h-3.5" />
-            <span>{isLegacy ? 'Legacy Binary Format' : 'Native Preview Unavailable'}</span>
+            <span>{customMessage || (isLegacy ? 'Legacy Binary Format' : 'Native Preview Unavailable')}</span>
           </div>
 
           <p className="text-slate-300 leading-relaxed text-xs font-normal">
-            {isLegacy ? (
+            {customMessage ? (
+              <>
+                Preview unavailable for this format in browser. You can download the authentic binary file to view the presentation in compatible desktop software.
+              </>
+            ) : isLegacy ? (
               <>
                 In-browser parsing is strictly supported for modern OpenXML formats (<code className="text-blue-400 font-mono text-xs">.docx</code>, <code className="text-blue-400 font-mono text-xs">.pptx</code>). Legacy binary Microsoft Office files (<code className="text-amber-300 font-mono text-xs">.{ext.toLowerCase()}</code>) require desktop software to ensure forensic fidelity.
               </>
@@ -84,7 +89,7 @@ export default function UnsupportedFileViewer({
             className="w-full flex items-center justify-center space-x-2 bg-blue-600 hover:bg-blue-500 text-white font-medium text-xs py-2.5 px-4 rounded-xl shadow-lg shadow-blue-500/10 transition-colors"
           >
             <Download className="w-4 h-4" />
-            <span>Download Original File ({formatBytes(fileSize)})</span>
+            <span>Download Original</span>
           </button>
         )}
 

@@ -55,15 +55,20 @@ export const DocumentRepository = {
   },
 
   async getDocumentById(id) {
-    const db = await openDatabase();
-    return new Promise((resolve, reject) => {
-      const tx = db.transaction('documents', 'readonly');
-      const store = tx.objectStore('documents');
-      const request = store.get(id);
+    try {
+      const db = await openDatabase();
+      return await new Promise((resolve, reject) => {
+        const tx = db.transaction('documents', 'readonly');
+        const store = tx.objectStore('documents');
+        const request = store.get(id);
 
-      request.onsuccess = () => resolve(request.result || null);
-      request.onerror = () => reject(request.error);
-    });
+        request.onsuccess = () => resolve(request.result || null);
+        request.onerror = () => reject(request.error);
+      });
+    } catch (err) {
+      const localDocs = loadLocal(STORAGE_KEY, []);
+      return localDocs.find(d => d.id === id) || null;
+    }
   },
 
   async findDuplicateDocument(caseId, hash, filename = '') {
@@ -170,6 +175,8 @@ export const DocumentRepository = {
     // Cache blob in memory for instant zero-latency retrieval
     blobMemoryCache.set(versionId, storedBlob);
     blobMemoryCache.set(docId, storedBlob);
+    blobMemoryCache.set(`pristine_${docId}`, storedBlob);
+    blobMemoryCache.set(`pristine_${versionId}`, storedBlob);
 
     // Immediately persist metadata to localStorage for zero data loss on immediate refresh
     const localDocs = loadLocal(STORAGE_KEY, []);
@@ -309,6 +316,8 @@ export const DocumentRepository = {
     // Cache blob in memory
     blobMemoryCache.set(versionId, storedBlob);
     blobMemoryCache.set(documentId, storedBlob);
+    blobMemoryCache.set(`pristine_${documentId}`, storedBlob);
+    blobMemoryCache.set(`pristine_${versionId}`, storedBlob);
 
     // Update in localStorage
     const localDocs = loadLocal(STORAGE_KEY, []);
@@ -429,16 +438,45 @@ export const DocumentRepository = {
     }
   },
 
-  async verifyDocumentIntegrity(documentId) {
+  async verifyDocumentIntegrity(documentId, actorInfo = null) {
     const doc = await this.getDocumentById(documentId);
     if (!doc) throw new Error('Document not found.');
 
-    const blob = await this.getVersionBlob(doc.currentVersionId);
+    const blob = await this.getVersionBlob(doc.currentVersionId, doc.id);
     if (!blob) throw new Error('Version file blob not found in storage.');
 
     // Calculate live hash from the actual stored bytes
     const calculatedHash = await computeSHA256(blob);
     const valid = (calculatedHash === doc.storedHash) && !doc.isTampered;
+    const now = new Date().toISOString();
+
+    const verifiedBy = actorInfo 
+      ? (actorInfo.name ? `${actorInfo.name} (${actorInfo.designation || actorInfo.role?.name || actorInfo.role || 'Officer'})` : String(actorInfo))
+      : (doc.verifiedBy || 'Security Verification System');
+
+    const updatedDoc = {
+      ...doc,
+      lastVerified: now,
+      verifiedBy,
+      integrityStatus: valid ? 'VERIFIED' : 'MISMATCH'
+    };
+
+    // Update in local storage
+    const localDocs = loadLocal(STORAGE_KEY, []);
+    saveLocal(STORAGE_KEY, localDocs.map(d => d.id === documentId ? updatedDoc : d));
+
+    // Update in IndexedDB atomically if available
+    try {
+      const db = await openDatabase();
+      await new Promise((resolve, reject) => {
+        const tx = db.transaction('documents', 'readwrite');
+        tx.objectStore('documents').put(updatedDoc);
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+      });
+    } catch (err) {
+      // Graceful fallback to memory/localStorage
+    }
 
     return {
       valid,
@@ -446,17 +484,28 @@ export const DocumentRepository = {
       currentVersion: doc.currentVersion,
       storedHash: doc.storedHash,
       calculatedHash,
-      isTampered: doc.isTampered
+      isTampered: doc.isTampered,
+      lastVerified: now,
+      verifiedBy,
+      document: updatedDoc
     };
   },
 
   async simulateDocumentTamper(documentId) {
-    const db = await openDatabase();
     const doc = await this.getDocumentById(documentId);
     if (!doc) throw new Error('Document not found.');
 
-    const currentBlob = await this.getVersionBlob(doc.currentVersionId);
+    const currentBlob = await this.getVersionBlob(doc.currentVersionId, doc.id);
     if (!currentBlob) throw new Error('Version blob not found.');
+
+    if (!doc.isTampered) {
+      if (!blobMemoryCache.has(`pristine_${doc.id}`)) {
+        blobMemoryCache.set(`pristine_${doc.id}`, currentBlob);
+      }
+      if (doc.currentVersionId && !blobMemoryCache.has(`pristine_${doc.currentVersionId}`)) {
+        blobMemoryCache.set(`pristine_${doc.currentVersionId}`, currentBlob);
+      }
+    }
 
     // Deliberately corrupt 1 byte of the blob for demonstration
     const buffer = await currentBlob.arrayBuffer();
@@ -467,62 +516,122 @@ export const DocumentRepository = {
     const corruptedBlob = new Blob([corruptedArray], { type: currentBlob.type });
     const corruptedHash = await computeSHA256(corruptedBlob);
 
-    return new Promise((resolve, reject) => {
-      const tx = db.transaction(['documents', 'versions'], 'readwrite');
-      
-      // Update version with corrupted blob
-      const verStore = tx.objectStore('versions');
-      verStore.get(doc.currentVersionId).onsuccess = (e) => {
-        const ver = e.target.result;
-        ver.fileBlob = corruptedBlob;
-        verStore.put(ver);
-      };
+    // Update memory cache
+    blobMemoryCache.set(doc.currentVersionId, corruptedBlob);
+    blobMemoryCache.set(doc.id, corruptedBlob);
 
-      // Mark document as tampered
-      const docStore = tx.objectStore('documents');
-      const updatedDoc = {
-        ...doc,
-        isTampered: true,
-        tamperedHash: corruptedHash
-      };
-      docStore.put(updatedDoc);
+    const updatedDoc = {
+      ...doc,
+      isTampered: true,
+      tamperedHash: corruptedHash,
+      integrityStatus: 'MISMATCH'
+    };
 
-      tx.oncomplete = () => resolve(updatedDoc);
-      tx.onerror = () => reject(tx.error);
-    });
+    // Update localStorage
+    const localDocs = loadLocal(STORAGE_KEY, []);
+    saveLocal(STORAGE_KEY, localDocs.map(d => d.id === documentId ? updatedDoc : d));
+
+    // Try IndexedDB if available
+    try {
+      const db = await openDatabase();
+      await new Promise((resolve, reject) => {
+        const tx = db.transaction(['documents', 'versions'], 'readwrite');
+        const verStore = tx.objectStore('versions');
+        const req = verStore.get(doc.currentVersionId);
+        req.onsuccess = (e) => {
+          const ver = e.target.result;
+          if (ver) {
+            ver.fileBlob = corruptedBlob;
+            verStore.put(ver);
+          }
+        };
+        const docStore = tx.objectStore('documents');
+        docStore.put(updatedDoc);
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+      });
+    } catch (e) {
+      // Graceful fallback to memory/localStorage
+    }
+
+    return updatedDoc;
   },
 
   async restoreDocument(documentId) {
-    const db = await openDatabase();
     const doc = await this.getDocumentById(documentId);
-    if (!doc || !doc.originalBlob) throw new Error('Cannot restore document.');
+    if (!doc) throw new Error('Cannot restore document: document not found.');
 
-    return new Promise((resolve, reject) => {
-      const tx = db.transaction(['documents', 'versions'], 'readwrite');
+    let rawOriginal = (doc.originalBlob instanceof Blob ? doc.originalBlob : null)
+      || blobMemoryCache.get(`pristine_${documentId}`)
+      || (doc.currentVersionId ? blobMemoryCache.get(`pristine_${doc.currentVersionId}`) : null);
 
-      const verStore = tx.objectStore('versions');
-      verStore.get(doc.currentVersionId).onsuccess = (e) => {
-        const ver = e.target.result;
-        ver.fileBlob = doc.originalBlob;
-        verStore.put(ver);
-      };
+    if (!rawOriginal) {
+      try {
+        const db = await openDatabase();
+        rawOriginal = await new Promise((resolve) => {
+          const tx = db.transaction(['documents'], 'readonly');
+          const req = tx.objectStore('documents').get(documentId);
+          req.onsuccess = () => {
+            const d = req.result;
+            if (d && d.originalBlob instanceof Blob) resolve(d.originalBlob);
+            else resolve(null);
+          };
+          req.onerror = () => resolve(null);
+        });
+      } catch (e) {}
+    }
 
-      const docStore = tx.objectStore('documents');
-      const updatedDoc = {
-        ...doc,
-        isTampered: false,
-        tamperedHash: null
-      };
-      docStore.put(updatedDoc);
+    if (!rawOriginal) throw new Error('Cannot restore document: pristine original blob not found.');
 
-      tx.oncomplete = () => resolve(updatedDoc);
-      tx.onerror = () => reject(tx.error);
-    });
+    const restoredBlob = ensureRenderableBlob(rawOriginal, doc.name, doc.mimeType);
+
+    // Update memory cache
+    blobMemoryCache.set(doc.currentVersionId, restoredBlob);
+    blobMemoryCache.set(doc.id, restoredBlob);
+
+    const updatedDoc = {
+      ...doc,
+      isTampered: false,
+      tamperedHash: null,
+      integrityStatus: 'VERIFIED',
+      originalBlob: restoredBlob
+    };
+
+    // Update localStorage
+    const localDocs = loadLocal(STORAGE_KEY, []);
+    saveLocal(STORAGE_KEY, localDocs.map(d => d.id === documentId ? updatedDoc : d));
+
+    // Try IndexedDB if available
+    try {
+      const db = await openDatabase();
+      await new Promise((resolve, reject) => {
+        const tx = db.transaction(['documents', 'versions'], 'readwrite');
+        const verStore = tx.objectStore('versions');
+        const req = verStore.get(doc.currentVersionId);
+        req.onsuccess = (e) => {
+          const ver = e.target.result;
+          if (ver) {
+            ver.fileBlob = restoredBlob;
+            verStore.put(ver);
+          }
+        };
+        const docStore = tx.objectStore('documents');
+        docStore.put(updatedDoc);
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+      });
+    } catch (e) {
+      // Graceful fallback to memory/localStorage
+    }
+
+    return updatedDoc;
   },
 
   async deleteDocument(id) {
     const localDocs = loadLocal(STORAGE_KEY, []);
     saveLocal(STORAGE_KEY, localDocs.filter(d => d.id !== id));
+    blobMemoryCache.delete(id);
+    blobMemoryCache.delete(`pristine_${id}`);
 
     try {
       const db = await openDatabase();
@@ -536,6 +645,7 @@ export const DocumentRepository = {
         docStore.delete(id);
         versions.forEach(v => {
           blobMemoryCache.delete(v.id);
+          blobMemoryCache.delete(`pristine_${v.id}`);
           verStore.delete(v.id);
         });
 

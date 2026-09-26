@@ -18,20 +18,14 @@
     "lucide-react": "^1.48.0",
     "mammoth": "^1.12.3",
     "pdfjs-dist": "^6.3.289",
+    "pptx-react-viewer": "^4.11.0",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "react-pdf": "^11.0.0",
-    "react-pptx-preview-kit": "^0.1.9",
     "react-zoom-pan-pinch": "^4.2.0",
     "tesseract.js": "^7.0.0",
     "video.js": "^8.24.1",
     "vite": "^8.3.1",
     "xlsx": "^0.18.5"
-  },
-  "overrides": {
-    "react-pptx-preview-kit": {
-      "react": "$react",
-      "react-dom": "$react-dom"
-    }
   }
 }

@@ -30,7 +30,7 @@ import DocumentViewer from './viewers/DocumentViewer';
 import { DocumentRepository } from '../services/documentRepository';
 import { AuditRepository } from '../services/auditRepository';
 import { SharingService } from '../services/sharingService';
-import { getFileInfo } from '../utils/fileTypes';
+import { getFileInfo, ensureRenderableBlob } from '../utils/fileTypes';
 
 function HighlightedOcrText({ text, query }) {
   if (!text || !query) return <span>{text}</span>;
@@ -113,11 +113,9 @@ export default function DocumentWorkspace({
     setLoadingBlob(true);
 
     // Fast path: if doc already has originalBlob or fileBlob attached in memory
-    if (doc.originalBlob instanceof Blob) {
-      setBlob(doc.originalBlob);
-      setLoadingBlob(false);
-    } else if (doc.fileBlob instanceof Blob) {
-      setBlob(doc.fileBlob);
+    const fastBlob = ensureRenderableBlob(doc.originalBlob || doc.fileBlob, doc.name, doc.mimeType);
+    if (fastBlob) {
+      setBlob(fastBlob);
       setLoadingBlob(false);
     }
 

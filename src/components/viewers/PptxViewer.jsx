@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { PptxPreview } from 'react-pptx-preview-kit';
+import { SlideCanvas, useViewerBuildingBlocks } from 'pptx-react-viewer';
+import 'pptx-react-viewer/styles';
 import { 
   Loader2, 
   AlertCircle, 
@@ -15,12 +16,12 @@ import {
 import { detectSwipeDirection } from '../../utils/slideNavigation';
 
 export default function PptxViewer({ blob, filename, onDownload }) {
-  const [arrayBuffer, setArrayBuffer] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
+  const [uint8Array, setUint8Array] = useState(null);
+  const [extractLoading, setExtractLoading] = useState(true);
+  const [extractError, setExtractError] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
 
-  // Presentation State parsed from PptxPreview DOM
+  // Presentation State
   const [currentSlide, setCurrentSlide] = useState(1);
   const [totalSlides, setTotalSlides] = useState(1);
   const [currentZoom, setCurrentZoom] = useState(1);
@@ -29,36 +30,56 @@ export default function PptxViewer({ blob, filename, onDownload }) {
   const [isDragging, setIsDragging] = useState(false);
 
   const containerRef = useRef(null);
-  const viewerRef = useRef(null);
+  const handleRef = useRef(null);
   const idleTimerRef = useRef(null);
   const touchStateRef = useRef({ startX: 0, startY: 0 });
   const dragStateRef = useRef({ isDown: false, startX: 0, startY: 0, scrollLeft: 0, scrollTop: 0 });
 
-  // Load binary ArrayBuffer from blob
+  // Load and extract Uint8Array binary from blob
   useEffect(() => {
     let isCancelled = false;
 
     if (!blob) {
-      setLoading(false);
-      setError(true);
+      setExtractLoading(false);
+      setExtractError(true);
       return;
     }
 
-    setLoading(true);
-    setError(false);
+    setExtractLoading(true);
+    setExtractError(false);
 
-    blob.arrayBuffer()
-      .then(buffer => {
+    const extractBinary = async () => {
+      let buffer;
+      if (blob instanceof ArrayBuffer) {
+        buffer = blob;
+      } else if (ArrayBuffer.isView(blob)) {
+        buffer = blob.buffer.slice(blob.byteOffset, blob.byteOffset + blob.byteLength);
+      } else if (typeof blob.arrayBuffer === 'function') {
+        buffer = await blob.arrayBuffer();
+      } else {
+        throw new Error('Unsupported blob format for PPTX extraction');
+      }
+
+      if (!buffer || buffer.byteLength === 0) {
+        throw new Error('Empty PPTX binary (0 bytes)');
+      }
+
+      return new Uint8Array(buffer);
+    };
+
+    extractBinary()
+      .then((bytes) => {
         if (!isCancelled) {
-          setArrayBuffer(buffer);
-          setLoading(false);
+          setUint8Array(bytes);
+          setExtractLoading(false);
+          setExtractError(false);
         }
       })
-      .catch(err => {
-        console.error('Failed to read PPTX ArrayBuffer:', err);
+      .catch((err) => {
+        console.error('Failed to extract PPTX binary:', err);
         if (!isCancelled) {
-          setError(true);
-          setLoading(false);
+          setExtractError(true);
+          setExtractLoading(false);
         }
       });
 
@@ -67,11 +88,32 @@ export default function PptxViewer({ blob, filename, onDownload }) {
     };
   }, [blob, retryCount]);
 
-  const handleRetry = () => {
-    setError(false);
-    setLoading(true);
-    setRetryCount(c => c + 1);
-  };
+  // Hook into pptx-react-viewer building blocks
+  const blocks = useViewerBuildingBlocks({
+    content: uint8Array,
+    canEdit: false,
+    handle: handleRef,
+    fitPadding: 24, // Consistent institutional margin around slide
+    maxFitScale: null,
+    onActiveSlideChange: useCallback((idx) => {
+      setCurrentSlide(idx + 1);
+    }, []),
+    onSlideCountChange: useCallback((count) => {
+      if (count > 0) setTotalSlides(count);
+    }, []),
+    onZoomChange: useCallback((z) => {
+      if (typeof z === 'number' && !isNaN(z) && z > 0) {
+        setCurrentZoom(z);
+      }
+    }, []),
+  });
+
+  const handleRetry = useCallback(() => {
+    setExtractError(false);
+    setExtractLoading(true);
+    setUint8Array(null);
+    setRetryCount((c) => c + 1);
+  }, []);
 
   // Activity timer for floating pill controls
   const handleActivity = useCallback(() => {
@@ -89,47 +131,6 @@ export default function PptxViewer({ blob, filename, onDownload }) {
     };
   }, [handleActivity]);
 
-  // Synchronize slide counter and zoom from PptxPreview DOM
-  useEffect(() => {
-    const root = viewerRef.current;
-    if (!root) return;
-
-    const syncInfo = () => {
-      const spans = root.querySelectorAll('span');
-      for (const span of spans) {
-        const text = span.textContent || '';
-        const match = text.match(/^\s*(\d+)\s*\/\s*(\d+)\s*$/);
-        if (match) {
-          const cur = parseInt(match[1], 10);
-          const tot = parseInt(match[2], 10);
-          if (!isNaN(cur) && !isNaN(tot)) {
-            setCurrentSlide(cur);
-            setTotalSlides(tot);
-          }
-          break;
-        }
-      }
-
-      for (const span of spans) {
-        const text = span.textContent || '';
-        const match = text.match(/^\s*(\d+)%\s*$/);
-        if (match) {
-          const z = parseInt(match[1], 10);
-          if (!isNaN(z)) {
-            setCurrentZoom(z / 100);
-          }
-          break;
-        }
-      }
-    };
-
-    syncInfo();
-    const observer = new MutationObserver(syncInfo);
-    observer.observe(root, { childList: true, subtree: true, characterData: true });
-
-    return () => observer.disconnect();
-  }, [arrayBuffer]);
-
   // Fullscreen change listener
   useEffect(() => {
     const handleFullscreenChange = () => {
@@ -139,75 +140,39 @@ export default function PptxViewer({ blob, filename, onDownload }) {
     return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
   }, []);
 
-  // Navigation dispatchers targeting PptxPreview's hidden controls and keydown dispatcher
-  const dispatchKey = useCallback((key) => {
-    const root = viewerRef.current;
-    if (!root) return;
-    const target = root.querySelector('[tabindex="0"]') || root;
-    target.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }));
-  }, []);
-
+  // Navigation handlers invoking handleRef
   const navigateNext = useCallback(() => {
-    const root = viewerRef.current;
-    const buttons = root?.querySelectorAll('button');
-    if (buttons && buttons.length >= 2) {
-      buttons[1].click(); // Second button in PptxPreview toolbar is "›"
-    } else {
-      dispatchKey('ArrowRight');
-    }
+    handleRef.current?.goNext?.();
     handleActivity();
-  }, [dispatchKey, handleActivity]);
+  }, [handleActivity]);
 
   const navigatePrev = useCallback(() => {
-    const root = viewerRef.current;
-    const buttons = root?.querySelectorAll('button');
-    if (buttons && buttons.length >= 1) {
-      buttons[0].click(); // First button in PptxPreview toolbar is "‹"
-    } else {
-      dispatchKey('ArrowLeft');
-    }
+    handleRef.current?.goPrev?.();
     handleActivity();
-  }, [dispatchKey, handleActivity]);
+  }, [handleActivity]);
 
   const navigateFirst = useCallback(() => {
-    dispatchKey('Home');
+    handleRef.current?.goTo?.(0);
     handleActivity();
-  }, [dispatchKey, handleActivity]);
+  }, [handleActivity]);
 
   const navigateLast = useCallback(() => {
-    dispatchKey('End');
+    handleRef.current?.goTo?.(totalSlides - 1);
     handleActivity();
-  }, [dispatchKey, handleActivity]);
+  }, [totalSlides, handleActivity]);
 
   const navigateZoomIn = useCallback(() => {
-    const root = viewerRef.current;
-    const buttons = root?.querySelectorAll('button');
-    if (buttons && buttons.length >= 5) {
-      buttons[4].click(); // Fifth button is "+"
-    } else {
-      dispatchKey('+');
-    }
+    handleRef.current?.zoomIn?.();
     handleActivity();
-  }, [dispatchKey, handleActivity]);
+  }, [handleActivity]);
 
   const navigateZoomOut = useCallback(() => {
-    const root = viewerRef.current;
-    const buttons = root?.querySelectorAll('button');
-    if (buttons && buttons.length >= 3) {
-      buttons[2].click(); // Third button is "−"
-    } else {
-      dispatchKey('-');
-    }
+    handleRef.current?.zoomOut?.();
     handleActivity();
-  }, [dispatchKey, handleActivity]);
+  }, [handleActivity]);
 
   const navigateFit = useCallback(() => {
-    const root = viewerRef.current;
-    const buttons = root?.querySelectorAll('button');
-    if (buttons && buttons.length >= 6) {
-      buttons[5].click(); // Sixth button is "Fit"
-    }
-    setCurrentZoom(1);
+    handleRef.current?.zoomReset?.();
     handleActivity();
   }, [handleActivity]);
 
@@ -273,12 +238,14 @@ export default function PptxViewer({ blob, filename, onDownload }) {
 
   // Spatial Edge-Click Navigation: clicks outside the slide on the left/right advance or go back
   const handleCanvasClick = (e) => {
-    // If click is on interactive controls or toolbar, ignore
-    if (e.target.closest('button') || e.target.closest('.floating-toolbar')) return;
+    // If click is on interactive controls, toolbar, or links, ignore
+    if (e.target.closest('button') || e.target.closest('.floating-toolbar') || e.target.closest('a')) return;
 
     // Requirement: Do not trigger navigation when clicking inside the actual slide content
-    const slideCard = e.target.closest('[style*="box-shadow"]') || e.target.closest('[style*="boxShadow"]');
-    if (slideCard) return;
+    const insideSlide = e.target.closest('[role="region"]') || 
+                        e.target.closest('[aria-roledescription="slide"]') ||
+                        e.target.closest('[data-pptx-ai-active]');
+    if (insideSlide) return;
 
     const rect = containerRef.current?.getBoundingClientRect();
     if (!rect) return;
@@ -291,14 +258,12 @@ export default function PptxViewer({ blob, filename, onDownload }) {
     }
   };
 
-  // Double-Click Zoom (Toggles between Fit and ~1.75x)
+  // Double-Click Zoom (Toggles between Fit and ~1.5x)
   const handleDoubleClick = (e) => {
     if (e.target.closest('button') || e.target.closest('.floating-toolbar')) return;
     if (currentZoom <= 1.05) {
-      // Zoom in to controlled level
       navigateZoomIn();
       setTimeout(navigateZoomIn, 50);
-      setTimeout(navigateZoomIn, 100);
     } else {
       navigateFit();
     }
@@ -309,18 +274,18 @@ export default function PptxViewer({ blob, filename, onDownload }) {
 
   const handleMouseDown = (e) => {
     if (!isPannable || e.button !== 0) return;
-    if (e.target.closest('button') || e.target.closest('.floating-toolbar')) return;
+    if (e.target.closest('button') || e.target.closest('.floating-toolbar') || e.target.closest('a')) return;
 
-    const scrollContainer = viewerRef.current?.querySelector('[style*="overflow: auto"]') || 
-                           viewerRef.current?.querySelector('[style*="overflow:auto"]');
-    if (!scrollContainer) return;
+    const viewport = containerRef.current?.querySelector('[data-pptx-viewport="true"]') ||
+                     containerRef.current?.querySelector('.overflow-auto');
+    if (!viewport) return;
 
     dragStateRef.current = {
       isDown: true,
       startX: e.clientX,
       startY: e.clientY,
-      scrollLeft: scrollContainer.scrollLeft,
-      scrollTop: scrollContainer.scrollTop
+      scrollLeft: viewport.scrollLeft,
+      scrollTop: viewport.scrollTop
     };
     setIsDragging(true);
   };
@@ -329,14 +294,14 @@ export default function PptxViewer({ blob, filename, onDownload }) {
     handleActivity();
     if (!dragStateRef.current.isDown) return;
 
-    const scrollContainer = viewerRef.current?.querySelector('[style*="overflow: auto"]') || 
-                           viewerRef.current?.querySelector('[style*="overflow:auto"]');
-    if (!scrollContainer) return;
+    const viewport = containerRef.current?.querySelector('[data-pptx-viewport="true"]') ||
+                     containerRef.current?.querySelector('.overflow-auto');
+    if (!viewport) return;
 
     const dx = e.clientX - dragStateRef.current.startX;
     const dy = e.clientY - dragStateRef.current.startY;
-    scrollContainer.scrollLeft = dragStateRef.current.scrollLeft - dx;
-    scrollContainer.scrollTop = dragStateRef.current.scrollTop - dy;
+    viewport.scrollLeft = dragStateRef.current.scrollLeft - dx;
+    viewport.scrollTop = dragStateRef.current.scrollTop - dy;
   };
 
   const handleMouseUp = () => {
@@ -346,7 +311,10 @@ export default function PptxViewer({ blob, filename, onDownload }) {
     }
   };
 
-  if (loading) {
+  const isRenderingError = extractError || Boolean(blocks.error);
+  const isStillLoading = extractLoading || blocks.loading || (!blocks.canvasProps?.activeSlide && !isRenderingError);
+
+  if (isStillLoading) {
     return (
       <div className="flex-1 h-full min-h-0 flex flex-col items-center justify-center p-12 text-slate-400 bg-slate-100 select-none">
         <Loader2 className="w-7 h-7 animate-spin text-orange-600 mb-2 stroke-[1.75]" />
@@ -355,7 +323,7 @@ export default function PptxViewer({ blob, filename, onDownload }) {
     );
   }
 
-  if (error || !arrayBuffer) {
+  if (isRenderingError) {
     return (
       <div className="flex-1 h-full min-h-0 flex items-center justify-center p-6 bg-slate-100 select-none">
         <div className="m-auto text-center p-8 bg-white border border-slate-200 rounded-2xl max-w-sm shadow-sm space-y-3">
@@ -405,62 +373,55 @@ export default function PptxViewer({ blob, filename, onDownload }) {
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
-      {/* Scoped Presentation Style Overrides */}
+      {/* Strict CSS Isolation for PPTX Presentation Canvas */}
       <style>{`
-        .pptx-clean-viewer > div {
+        /* Isolate rendering context to prevent external cascade leak */
+        .pptx-isolated-canvas-wrapper {
+          isolation: isolate;
+          width: 100%;
+          height: 100%;
+          display: flex;
+          flex: 1 1 0%;
+          min-height: 0;
+          position: relative;
+          background-color: #f1f5f9;
+        }
+
+        /* Viewport fill and background */
+        .pptx-isolated-canvas-wrapper [data-pptx-viewport="true"] {
+          background-color: #f1f5f9 !important;
           width: 100% !important;
           height: 100% !important;
-          display: flex !important;
-          flex-direction: column !important;
           outline: none !important;
-          background-color: #f1f5f9 !important;
         }
-        /* Hide PptxPreview's built-in header/toolbar */
-        .pptx-clean-viewer > div > div:nth-child(2) {
-          display: none !important;
-        }
-        /* Hide PptxPreview's built-in left thumbnail sidebar (width: 212px) */
-        .pptx-clean-viewer > div > div:last-child > div:first-child {
-          display: none !important;
-        }
-        /* Main slide canvas fills entire space */
-        .pptx-clean-viewer > div > div:last-child {
-          width: 100% !important;
-          height: 100% !important;
-          flex: 1 1 0% !important;
-          overflow: hidden !important;
-          background-color: #f1f5f9 !important;
-        }
-        /* Centered slide stage */
-        .pptx-clean-viewer > div > div:last-child > div:last-child {
-          width: 100% !important;
-          height: 100% !important;
-          flex: 1 1 0% !important;
-          display: flex !important;
-          align-items: center !important;
-          justify-content: center !important;
-          background-color: #f1f5f9 !important;
-          padding: 24px !important;
-          box-sizing: border-box !important;
-        }
-        /* Slide card: clean border, institutional shadow, subtle 140ms transition */
-        .pptx-clean-viewer > div > div:last-child > div:last-child > div {
-          border-radius: 6px !important;
+
+        /* Slide stage card styling: clean institutional border and shadow */
+        .pptx-isolated-canvas-wrapper [role="region"][aria-roledescription="slide"] {
+          border-radius: 4px !important;
           box-shadow: 0 4px 24px -2px rgba(15, 23, 42, 0.12), 0 2px 8px -1px rgba(15, 23, 42, 0.08) !important;
           border: 1px solid #e2e8f0 !important;
           background-color: #ffffff !important;
-          transition: opacity 140ms ease-out, transform 140ms ease-out !important;
         }
-        @media (prefers-reduced-motion: reduce) {
-          .pptx-clean-viewer > div > div:last-child > div:last-child > div {
-            transition: none !important;
-          }
+
+        /* Protect images inside slides from Tailwind's preflight img { max-width: 100%; height: auto; } */
+        .pptx-isolated-canvas-wrapper [role="region"][aria-roledescription="slide"] img {
+          max-width: none !important;
+        }
+
+        /* Protect SVG shapes (e.g. edge cards on slide 3) from being clipped */
+        .pptx-isolated-canvas-wrapper [role="region"][aria-roledescription="slide"] svg {
+          overflow: visible !important;
+        }
+
+        /* Ensure paragraphs inside slide text boxes do not inherit external margin */
+        .pptx-isolated-canvas-wrapper [role="region"][aria-roledescription="slide"] p {
+          margin: 0 !important;
         }
       `}</style>
 
-      {/* Actual High-Fidelity PPTX Slide Stage */}
-      <div ref={viewerRef} className="pptx-clean-viewer w-full h-full flex-1 min-h-0 flex flex-col pointer-events-auto">
-        <PptxPreview file={arrayBuffer} />
+      {/* Actual Slide Presentation Canvas */}
+      <div className="pptx-isolated-canvas-wrapper pointer-events-auto">
+        <SlideCanvas {...blocks.canvasProps} showRulers={false} showGrid={false} />
       </div>
 
       {/* Spatial Left Navigation Edge Trigger (Hover affordance) */}
@@ -498,6 +459,30 @@ export default function PptxViewer({ blob, filename, onDownload }) {
           <span className="font-mono text-xs font-semibold text-slate-800 min-w-[50px] text-center px-1">
             {currentSlide} / {totalSlides}
           </span>
+
+          <div className="h-3.5 w-px bg-slate-200"></div>
+
+          {/* Previous Slide */}
+          <button
+            type="button"
+            onClick={navigatePrev}
+            disabled={currentSlide <= 1}
+            className="p-1 rounded-md hover:bg-slate-100 disabled:opacity-30 disabled:pointer-events-none text-slate-600 hover:text-slate-900 cursor-pointer transition-colors"
+            title="Previous Slide (Arrow Left)"
+          >
+            <ChevronLeft className="w-3.5 h-3.5" />
+          </button>
+
+          {/* Next Slide */}
+          <button
+            type="button"
+            onClick={navigateNext}
+            disabled={currentSlide >= totalSlides}
+            className="p-1 rounded-md hover:bg-slate-100 disabled:opacity-30 disabled:pointer-events-none text-slate-600 hover:text-slate-900 cursor-pointer transition-colors"
+            title="Next Slide (Arrow Right)"
+          >
+            <ChevronRight className="w-3.5 h-3.5" />
+          </button>
 
           <div className="h-3.5 w-px bg-slate-200"></div>
 

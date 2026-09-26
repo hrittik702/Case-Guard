@@ -192,6 +192,7 @@ export default function DocumentViewer({ document, blob, loading = false, onDown
                       filename={document.name}
                       mimeType={document.mimeType}
                       isLegacy={fileInfo.isLegacy}
+                      customMessage={fileInfo.customMessage}
                       onDownload={handleDownload}
                     />
                   );

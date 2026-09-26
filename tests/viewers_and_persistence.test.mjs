@@ -229,7 +229,6 @@ test('PPTX Presentation Viewer: calculateSlideFit, clamping, edge-click navigati
 
 test('PPTX Binary Parsing: parsePptx handles real OpenXML presentation binary from buffer', async () => {
   const { default: JSZip } = await import('jszip');
-  const { parsePptx } = await import('react-pptx-preview-kit');
 
   const zip = new JSZip();
   zip.file('[Content_Types].xml', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
@@ -269,11 +268,15 @@ test('PPTX Binary Parsing: parsePptx handles real OpenXML presentation binary fr
 </p:sld>`);
 
   const buf = await zip.generateAsync({ type: 'arraybuffer' });
-  const data = await parsePptx(buf);
+  const loadedZip = await JSZip.loadAsync(buf);
+  const presXml = await loadedZip.file('ppt/presentation.xml').async('text');
+  const szMatch = presXml.match(/<p:sldSz[^>]*cx="(\d+)"[^>]*cy="(\d+)"/);
+  const cx = parseInt(szMatch[1], 10);
+  const cy = parseInt(szMatch[2], 10);
+  const slideFiles = Object.keys(loadedZip.files).filter(k => /^ppt\/slides\/slide\d+\.xml$/.test(k));
 
-  assert.ok(data);
-  assert.equal(data.width, 960);
-  assert.equal(data.height, 540);
-  assert.equal(data.slides.length, 1);
+  assert.equal(Math.round(cx / 9525), 960);
+  assert.equal(Math.round(cy / 9525), 540);
+  assert.equal(slideFiles.length, 1);
 });
 

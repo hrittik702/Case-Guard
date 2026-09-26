@@ -1,0 +1,1 @@
+var e={};throw Error(`Could not resolve "@ai-sdk/react" imported by "pptx-react-viewer". Is it installed?`);export{e as default};

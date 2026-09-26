@@ -90,7 +90,7 @@ export function getFileInfo(mimeType = '', filename = '') {
     };
   }
 
-  // 4. PPTX Presentation
+  // 4. PPTX Presentation (Modern OpenXML)
   if (
     mime === 'application/vnd.openxmlformats-officedocument.presentationml.presentation' ||
     ext === 'pptx'
@@ -101,6 +101,22 @@ export function getFileInfo(mimeType = '', filename = '') {
       label: 'PowerPoint Presentation',
       ocrEligible: false,
       badgeColor: 'orange'
+    };
+  }
+
+  // 4b. Legacy PPT Presentation
+  if (
+    mime === 'application/vnd.ms-powerpoint' ||
+    ext === 'ppt'
+  ) {
+    return {
+      viewerType: VIEWER_TYPES.UNSUPPORTED,
+      category: FILE_CATEGORIES.PRESENTATION,
+      label: 'Legacy Presentation (.ppt)',
+      ocrEligible: false,
+      badgeColor: 'zinc',
+      isLegacy: true,
+      customMessage: 'Preview unavailable for this format'
     };
   }
 
@@ -215,6 +231,7 @@ export function detectMimeType(fileBlob, filename = '') {
     docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
     xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     pptx: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+    ppt: 'application/vnd.ms-powerpoint',
     txt: 'text/plain',
     csv: 'text/csv',
     tsv: 'text/tab-separated-values',
@@ -240,11 +257,11 @@ export function detectMimeType(fileBlob, filename = '') {
  * Ensures an image or binary source is a valid renderable Blob with the correct MIME type.
  * Handles Blobs, Files, ArrayBuffers, and Uint8Arrays without unnecessary conversions.
  */
-export function ensureRenderableBlob(blob, filename = '') {
+export function ensureRenderableBlob(blob, filename = '', fallbackMime = '') {
   if (!blob) return null;
   if (typeof blob === 'string') return blob;
 
-  const targetMime = detectMimeType(blob, filename);
+  const targetMime = fallbackMime || detectMimeType(blob, filename);
 
   // If ArrayBuffer or TypedArray view
   if (blob instanceof ArrayBuffer || ArrayBuffer.isView(blob)) {
