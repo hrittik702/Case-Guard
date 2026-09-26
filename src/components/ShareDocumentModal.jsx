@@ -119,19 +119,19 @@ export default function ShareDocumentModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs overflow-y-auto">
-      <div className="bg-white border border-slate-200 rounded-2xl w-full max-w-xl shadow-2xl overflow-hidden my-6 animate-in zoom-in-95 duration-150">
+      <div className="bg-white border border-slate-200 rounded-xl w-full max-w-xl shadow-xl overflow-hidden my-6 animate-in zoom-in-95 duration-150">
         
         {/* Header */}
-        <div className="bg-slate-900 text-white px-6 py-4 flex items-center justify-between">
+        <div className="bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between">
           <div className="flex items-center space-x-2.5">
-            <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white shrink-0">
+            <div className="w-8 h-8 rounded-lg bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-700 shrink-0">
               <Share2 className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-white tracking-tight">
+              <h3 className="text-lg font-semibold text-slate-900 tracking-tight">
                 Controlled Document Access Delegation
               </h3>
-              <p className="text-xs text-slate-400 font-normal">
+              <p className="text-xs text-slate-500 font-normal">
                 PoLP-Compliant Inter-Agency Evidence Sharing
               </p>
             </div>
@@ -139,7 +139,9 @@ export default function ShareDocumentModal({
 
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-white p-1 rounded transition-colors"
+            className="text-slate-400 hover:text-slate-700 hover:bg-slate-100 p-1.5 rounded-lg transition-colors"
+            aria-label="Close dialog"
+            title="Close"
           >
             <X className="w-4 h-4" />
           </button>
@@ -173,7 +175,7 @@ export default function ShareDocumentModal({
             >
               {candidateRecipients.map(u => (
                 <option key={u.id} value={u.email}>
-                  {u.role.avatar} {u.name} — {u.designation} ({u.clearance})
+                  {u.name} — {u.designation} ({u.clearance})
                 </option>
               ))}
             </select>

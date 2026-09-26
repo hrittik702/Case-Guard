@@ -417,7 +417,7 @@ export default function AuditTrailView({
             onClick={() => setSelectedEvent(null)}
           />
           <aside 
-            className="fixed inset-y-0 right-0 z-50 w-full sm:w-[420px] bg-white border-l border-slate-200 shadow-2xl flex flex-col animate-in slide-in-from-right duration-200"
+            className="fixed inset-y-0 right-0 z-50 w-full sm:w-[440px] bg-white border-l border-slate-200 shadow-2xl flex flex-col animate-in slide-in-from-right duration-200"
             role="dialog"
             aria-label="Audit Event Details"
           >
@@ -436,6 +436,7 @@ export default function AuditTrailView({
                 type="button"
                 onClick={() => setSelectedEvent(null)}
                 className="p-1.5 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-200/50 transition-colors"
+                aria-label="Close details"
                 title="Close (Esc)"
               >
                 <X className="w-4 h-4" />
@@ -603,6 +604,8 @@ export default function AuditTrailView({
                 type="button"
                 onClick={() => setActiveCert(null)}
                 className="text-slate-400 hover:text-slate-600 p-1 rounded"
+                aria-label="Close certificate"
+                title="Close"
               >
                 <X className="w-5 h-5" />
               </button>

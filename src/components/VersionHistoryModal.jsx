@@ -30,17 +30,22 @@ export default function VersionHistoryModal({ doc, caseItem, onClose, onOpenDocu
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs overflow-y-auto">
-      <div className="bg-white border border-slate-200 rounded-2xl w-full max-w-3xl shadow-2xl overflow-hidden my-6">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs overflow-y-auto">
+      <div 
+        className="bg-white border border-slate-200 rounded-xl w-full max-w-3xl shadow-2xl overflow-hidden my-6 animate-in zoom-in-95 duration-150"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="version-history-title"
+      >
         
         {/* Header */}
-        <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/80">
+        <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50/80">
           <div className="flex items-center space-x-2.5">
-            <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white">
+            <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white shrink-0">
               <GitBranch className="w-4 h-4" />
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-slate-900 tracking-tight">
+              <h2 id="version-history-title" className="text-lg font-semibold text-slate-900 tracking-tight">
                 Document Version Timeline & Lineage
               </h2>
               <p className="text-xs text-slate-500 font-normal">
@@ -51,7 +56,9 @@ export default function VersionHistoryModal({ doc, caseItem, onClose, onOpenDocu
 
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100"
+            className="text-slate-400 hover:text-slate-700 hover:bg-slate-100 p-1.5 rounded-lg transition-colors"
+            aria-label="Close dialog"
+            title="Close"
           >
             <X className="w-4 h-4" />
           </button>

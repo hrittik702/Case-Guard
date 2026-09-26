@@ -600,9 +600,9 @@ export default function DocumentWorkspace({
                       <button
                         onClick={() => onSimulateTamper && onSimulateTamper(doc)}
                         className="flex-1 py-1.5 px-2 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 rounded text-[11px] font-medium transition-colors"
-                        title="Simulate 1-byte storage corruption for demo"
+                        title="Test cryptographic tamper detection against storage alterations"
                       >
-                        Simulate Tamper
+                        Test Tamper Detection
                       </button>
                       <button
                         onClick={() => onRestore && onRestore(doc)}

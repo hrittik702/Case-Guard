@@ -37,25 +37,30 @@ export default function AIRedactionModal({ doc, caseItem, onClose, onSaveRedacte
   const redactedText = getRedactedContent(doc.content);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm overflow-y-auto">
-      <div className="bg-slate-900 border border-purple-500/50 rounded-2xl w-full max-w-4xl shadow-2xl overflow-hidden my-8">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs overflow-y-auto">
+      <div 
+        className="bg-white border border-slate-200 rounded-xl w-full max-w-4xl shadow-xl overflow-hidden my-6 animate-in zoom-in-95 duration-150"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="redaction-modal-title"
+      >
         
         {/* Header */}
-        <div className="bg-slate-950 px-6 py-4 border-b border-slate-800 flex items-center justify-between">
+        <div className="bg-white px-6 py-4 border-b border-slate-200 flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <div className="w-9 h-9 rounded-lg bg-purple-950 border border-purple-800 flex items-center justify-center">
-              <Sparkles className="w-5 h-5 text-purple-400" />
+            <div className="w-8 h-8 rounded-lg bg-purple-50 border border-purple-200 flex items-center justify-center text-purple-700 shrink-0">
+              <Sparkles className="w-4 h-4" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-xs bg-purple-950 text-purple-300 border border-purple-800 px-2 py-0.5 rounded font-mono">
+                <span className="text-[11px] bg-purple-50 text-purple-700 border border-purple-200 px-1.5 py-0.5 rounded font-mono font-medium">
                   AI Legal Redaction Suite
                 </span>
-                <span className="text-xs text-slate-400 font-medium">
+                <span className="text-xs text-slate-500 font-normal">
                   Section 73 BNS / Section 228A IPC Compliance
                 </span>
               </div>
-              <h2 className="text-lg font-bold text-white mt-0.5">
+              <h2 id="redaction-modal-title" className="text-lg font-semibold text-slate-900 tracking-tight mt-0.5">
                 Automated PII & Sensitive Entity Sanitization
               </h2>
             </div>
@@ -63,65 +68,67 @@ export default function AIRedactionModal({ doc, caseItem, onClose, onSaveRedacte
 
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-white p-2 rounded-lg hover:bg-slate-800 transition-colors"
+            className="text-slate-400 hover:text-slate-700 hover:bg-slate-100 p-1.5 rounded-lg transition-colors"
+            aria-label="Close dialog"
+            title="Close"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* Configuration Bar */}
-        <div className="bg-slate-900/90 px-6 py-3 border-b border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs">
+        <div className="bg-slate-50 px-6 py-3 border-b border-slate-200 flex flex-wrap items-center justify-between gap-3 text-xs">
           <div className="flex flex-wrap items-center gap-4">
-            <span className="font-semibold text-slate-300">Sanitization Rules:</span>
+            <span className="font-semibold text-slate-700">Sanitization Rules:</span>
             
-            <label className="flex items-center space-x-1.5 cursor-pointer text-slate-300">
+            <label className="flex items-center space-x-1.5 cursor-pointer text-slate-700">
               <input
                 type="checkbox"
                 checked={maskAadhaar}
                 onChange={(e) => setMaskAadhaar(e.target.checked)}
-                className="rounded border-slate-700 text-purple-600 focus:ring-purple-500 bg-slate-950"
+                className="rounded border-slate-300 text-purple-600 focus:ring-purple-500"
               />
               <span>Aadhaar Numbers</span>
             </label>
 
-            <label className="flex items-center space-x-1.5 cursor-pointer text-slate-300">
+            <label className="flex items-center space-x-1.5 cursor-pointer text-slate-700">
               <input
                 type="checkbox"
                 checked={maskPhone}
                 onChange={(e) => setMaskPhone(e.target.checked)}
-                className="rounded border-slate-700 text-purple-600 focus:ring-purple-500 bg-slate-950"
+                className="rounded border-slate-300 text-purple-600 focus:ring-purple-500"
               />
               <span>Phone Numbers</span>
             </label>
 
-            <label className="flex items-center space-x-1.5 cursor-pointer text-slate-300">
+            <label className="flex items-center space-x-1.5 cursor-pointer text-slate-700">
               <input
                 type="checkbox"
                 checked={maskVictimMinor}
                 onChange={(e) => setMaskVictimMinor(e.target.checked)}
-                className="rounded border-slate-700 text-purple-600 focus:ring-purple-500 bg-slate-950"
+                className="rounded border-slate-300 text-purple-600 focus:ring-purple-500"
               />
               <span>Victim / Minor Names (S.73 BNS)</span>
             </label>
 
-            <label className="flex items-center space-x-1.5 cursor-pointer text-slate-300">
+            <label className="flex items-center space-x-1.5 cursor-pointer text-slate-700">
               <input
                 type="checkbox"
                 checked={maskAddress}
                 onChange={(e) => setMaskAddress(e.target.checked)}
-                className="rounded border-slate-700 text-purple-600 focus:ring-purple-500 bg-slate-950"
+                className="rounded border-slate-300 text-purple-600 focus:ring-purple-500"
               />
               <span>Residential Addresses</span>
             </label>
           </div>
 
-          <div className="flex items-center space-x-1 bg-slate-950 p-1 rounded-lg border border-slate-800">
+          <div className="flex items-center space-x-1 bg-white p-1 rounded-lg border border-slate-200 shadow-xs">
             <button
               onClick={() => setActiveView('REDACTED')}
               className={`px-3 py-1 rounded text-xs font-semibold transition-colors ${
                 activeView === 'REDACTED'
-                  ? 'bg-purple-600 text-white shadow-sm'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-purple-600 text-white shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
               }`}
             >
               Sanitized Preview
@@ -131,7 +138,7 @@ export default function AIRedactionModal({ doc, caseItem, onClose, onSaveRedacte
               className={`px-3 py-1 rounded text-xs font-semibold transition-colors ${
                 activeView === 'ORIGINAL'
                   ? 'bg-slate-800 text-white'
-                  : 'text-slate-400 hover:text-white'
+                  : 'text-slate-600 hover:text-slate-900'
               }`}
             >
               Original View
@@ -140,29 +147,29 @@ export default function AIRedactionModal({ doc, caseItem, onClose, onSaveRedacte
         </div>
 
         {/* Content Box */}
-        <div className="p-6 max-h-[55vh] overflow-y-auto bg-slate-950/40">
-          <div className="bg-slate-950 border border-slate-800 rounded-xl p-6 font-mono text-sm leading-relaxed text-slate-200 whitespace-pre-wrap selection:bg-purple-600 shadow-inner">
+        <div className="p-6 max-h-[55vh] overflow-y-auto bg-slate-50/50">
+          <div className="bg-white border border-slate-200 rounded-xl p-6 font-mono text-sm leading-relaxed text-slate-800 whitespace-pre-wrap selection:bg-purple-100 selection:text-purple-900 shadow-inner">
             {activeView === 'REDACTED' ? redactedText : doc.content}
           </div>
         </div>
 
         {/* Footer */}
-        <div className="bg-slate-950 px-6 py-4 border-t border-slate-800 flex items-center justify-between">
-          <div className="flex items-center gap-2 text-xs text-purple-300">
-            <Shield className="w-4 h-4 text-purple-400" />
+        <div className="bg-slate-50 px-6 py-4 border-t border-slate-200 flex items-center justify-between">
+          <div className="flex items-center gap-2 text-xs text-slate-600">
+            <Shield className="w-4 h-4 text-purple-600" />
             <span>Ready for public court inspection & legal defense disclosure without breaching privacy.</span>
           </div>
 
           <div className="flex items-center space-x-2">
             <button
               onClick={() => onSaveRedactedVersion(doc, redactedText)}
-              className="bg-purple-600 hover:bg-purple-500 text-white px-4 py-2 rounded-lg text-xs font-semibold shadow-md transition-colors"
+              className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-xs font-semibold shadow-xs transition-colors"
             >
               Save As Sanitized Public Copy
             </button>
             <button
               onClick={onClose}
-              className="bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2 rounded-lg text-xs font-semibold transition-colors"
+              className="bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 px-4 py-2 rounded-lg text-xs font-semibold transition-colors"
             >
               Close
             </button>

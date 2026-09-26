@@ -312,17 +312,22 @@ export default function UploadModal({
   const fileInfo = selectedFile ? getFileInfo(selectedFile.type, selectedFile.name) : null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs overflow-y-auto">
-      <div className="bg-white border border-slate-200 rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden my-6 max-h-[92vh] flex flex-col">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs overflow-y-auto">
+      <div 
+        className="bg-white border border-slate-200 rounded-xl w-full max-w-lg shadow-xl overflow-hidden my-6 max-h-[92vh] flex flex-col animate-in zoom-in-95 duration-150"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="upload-modal-title"
+      >
         
         {/* Header */}
-        <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/80 shrink-0">
+        <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50/80 shrink-0">
           <div className="flex items-center space-x-2.5">
-            <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white shadow-sm">
+            <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white shadow-xs shrink-0">
               <Upload className="w-4 h-4" />
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-slate-900 tracking-tight">
+              <h2 id="upload-modal-title" className="text-lg font-semibold text-slate-900 tracking-tight">
                 {isNewVersionMode ? 'Upload New Revision' : 'Upload Legal / Investigation Document'}
               </h2>
               <div className="flex items-center space-x-2 text-xs text-slate-500 font-normal">
@@ -336,7 +341,9 @@ export default function UploadModal({
           {status !== UPLOAD_STATES.HASHING && status !== UPLOAD_STATES.STORING && status !== UPLOAD_STATES.PROCESSING && (
             <button
               onClick={onClose}
-              className="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition-colors"
+              className="text-slate-400 hover:text-slate-700 hover:bg-slate-100 p-1.5 rounded-lg transition-colors"
+              aria-label="Close dialog"
+              title="Close"
             >
               <X className="w-4 h-4" />
             </button>
@@ -565,12 +572,13 @@ export default function UploadModal({
               {!isNewVersionMode && (
                 <>
                   <div>
-                    <label className="text-slate-700 block mb-1 font-medium text-xs">Associated Case:</label>
+                    <label htmlFor="upload-case-select" className="text-slate-700 block mb-1 font-medium text-xs">Associated Case:</label>
                     {cases.length > 0 ? (
                       <select
+                        id="upload-case-select"
                         value={selectedCaseId}
                         onChange={(e) => setSelectedCaseId(e.target.value)}
-                        className="w-full bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 text-sm font-normal text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer"
+                        className="w-full h-9 bg-white border border-slate-300 rounded-lg px-2.5 text-xs font-normal text-slate-900 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-500 cursor-pointer"
                       >
                         {cases.map(c => (
                           <option key={c.id} value={c.caseNumber || c.id}>
@@ -582,11 +590,12 @@ export default function UploadModal({
                       <div className="text-xs text-amber-700 bg-amber-50 p-2.5 rounded border border-amber-200">
                         No cases created yet. Enter a case identifier:
                         <input
+                          id="upload-case-input"
                           type="text"
                           placeholder="e.g. CR-2026-001"
                           value={selectedCaseId}
                           onChange={(e) => setSelectedCaseId(e.target.value)}
-                          className="mt-1 w-full bg-white border border-amber-300 rounded px-2 py-1 text-slate-900 font-mono text-xs"
+                          className="mt-1 w-full h-9 bg-white border border-amber-300 rounded-lg px-2.5 text-slate-900 font-mono text-xs focus:outline-none focus:ring-1 focus:ring-amber-500"
                         />
                       </div>
                     )}
@@ -594,11 +603,12 @@ export default function UploadModal({
 
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="text-slate-700 block mb-1 font-medium text-xs">Security Clearance:</label>
+                      <label htmlFor="upload-classification" className="text-slate-700 block mb-1 font-medium text-xs">Security Clearance:</label>
                       <select
+                        id="upload-classification"
                         value={classification}
                         onChange={(e) => setClassification(e.target.value)}
-                        className="w-full bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 text-sm font-normal text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        className="w-full h-9 bg-white border border-slate-300 rounded-lg px-2.5 text-xs font-normal text-slate-900 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-500"
                       >
                         <option value="Confidential">Confidential</option>
                         <option value="Secret">Secret</option>
@@ -608,11 +618,12 @@ export default function UploadModal({
                     </div>
 
                     <div>
-                      <label className="text-slate-700 block mb-1 font-medium text-xs">Category:</label>
+                      <label htmlFor="upload-category" className="text-slate-700 block mb-1 font-medium text-xs">Category:</label>
                       <select
+                        id="upload-category"
                         value={category}
                         onChange={(e) => setCategory(e.target.value)}
-                        className="w-full bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 text-sm font-normal text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        className="w-full h-9 bg-white border border-slate-300 rounded-lg px-2.5 text-xs font-normal text-slate-900 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-500"
                       >
                         <option value="Investigation Record">Investigation Record</option>
                         <option value="FIR">First Information Report</option>
@@ -629,13 +640,14 @@ export default function UploadModal({
               {/* Change Note (for revisions) */}
               {isNewVersionMode && (
                 <div>
-                  <label className="text-slate-700 block mb-1 font-medium text-xs">Revision Change Note:</label>
+                  <label htmlFor="upload-change-note" className="text-slate-700 block mb-1 font-medium text-xs">Revision Change Note:</label>
                   <input
+                    id="upload-change-note"
                     type="text"
                     placeholder="e.g. Updated witness deposition or revised forensic analysis"
                     value={changeNote}
                     onChange={(e) => setChangeNote(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-1.5 text-sm font-normal text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="w-full h-9 bg-white border border-slate-300 rounded-lg px-3 text-xs font-normal text-slate-900 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-500"
                   />
                 </div>
               )}
@@ -645,7 +657,7 @@ export default function UploadModal({
                 <button
                   type="button"
                   onClick={onClose}
-                  className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3.5 py-2 rounded-lg font-medium text-xs transition-colors"
+                  className="bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 px-3.5 py-2 rounded-lg font-medium text-xs transition-colors"
                 >
                   Cancel
                 </button>

@@ -1,32 +1,20 @@
-import React, { useState } from 'react';
-import { 
-  Search, 
-  FileText, 
-  Filter, 
-  ShieldCheck, 
-  CheckCircle2, 
-  AlertTriangle, 
-  Lock, 
-  ChevronRight, 
-  ArrowUpRight,
+import React, { useState, useMemo, useRef, useEffect } from 'react';
+import {
+  Search,
+  FileText,
+  SlidersHorizontal,
+  ChevronDown,
+  ChevronRight,
+  CheckCircle2,
+  AlertTriangle,
+  Lock,
+  X,
+  RotateCcw,
   Eye,
-  Hash
+  FolderGit2
 } from 'lucide-react';
-
-function getOcrSnippet(text, query) {
-  if (!text || !query) return null;
-  const lowerText = text.toLowerCase();
-  const lowerQuery = query.toLowerCase().trim();
-  if (!lowerQuery) return null;
-  const index = lowerText.indexOf(lowerQuery);
-  if (index === -1) return null;
-
-  const start = Math.max(0, index - 40);
-  const end = Math.min(text.length, index + lowerQuery.length + 50);
-  const prefix = start > 0 ? '...' : '';
-  const suffix = end < text.length ? '...' : '';
-  return prefix + text.slice(start, end).replace(/\s+/g, ' ') + suffix;
-}
+import { filterAndSortSearchResults } from '../utils/searchUtils.js';
+import { formatCaseId } from '../utils/caseUtils.js';
 
 function HighlightedSnippet({ text, query }) {
   if (!text || !query) return <span>{text}</span>;
@@ -34,7 +22,7 @@ function HighlightedSnippet({ text, query }) {
   const lowerText = text.toLowerCase();
   const lowerQuery = query.toLowerCase().trim();
   if (!lowerQuery) return <span>{text}</span>;
-  
+
   let lastIndex = 0;
   let idx = lowerText.indexOf(lowerQuery, lastIndex);
 
@@ -54,7 +42,7 @@ function HighlightedSnippet({ text, query }) {
     <span>
       {parts.map((p, i) =>
         p.highlight ? (
-          <mark key={i} className="bg-yellow-200 text-yellow-950 font-semibold px-0.5 rounded">
+          <mark key={i} className="bg-amber-100 text-amber-900 font-semibold px-0.5 rounded">
             {p.text}
           </mark>
         ) : (
@@ -65,301 +53,517 @@ function HighlightedSnippet({ text, query }) {
   );
 }
 
-export default function GlobalSearchView({ 
-  cases = [], 
+export default function GlobalSearchView({
+  cases = [],
   documents = [],
-  onSelectCase, 
-  onViewDocument, 
-  onVerifyDocument 
+  currentUser = null,
+  currentRole = null,
+  onSelectCase,
+  onViewDocument,
+  onVerifyDocument
 }) {
   const [query, setQuery] = useState('');
   const [caseFilter, setCaseFilter] = useState('ALL');
   const [typeFilter, setTypeFilter] = useState('ALL');
   const [classificationFilter, setClassificationFilter] = useState('ALL');
   const [statusFilter, setStatusFilter] = useState('ALL');
+  const [sortOption, setSortOption] = useState('relevance');
 
-  // Flatten all documents across all cases or from direct documents prop
-  const allDocs = documents.length > 0
-    ? documents.map(d => ({ ...d, caseItem: cases.find(c => c.caseNumber === d.caseId) }))
-    : cases.flatMap(c => (c.documents || []).map(d => ({ ...d, caseItem: c })));
+  const [filterMenuOpen, setFilterMenuOpen] = useState(false);
+  const filterMenuRef = useRef(null);
+  const searchInputRef = useRef(null);
 
-  const filteredResults = allDocs.map(d => {
-    const q = query.trim().toLowerCase();
-    const docName = (d.name || '').toLowerCase();
-    const docCaseId = (d.caseId || '').toLowerCase();
-    const docType = (d.category || d.type || '').toLowerCase();
-    const docUploader = (d.createdBy || d.uploadedBy || '').toLowerCase();
-    const docHash = (d.storedHash || d.hash || '').toLowerCase();
-    const docOcrText = (d.ocr?.text || '').toLowerCase();
-
-    const matches = [];
-    if (q) {
-      if (docName.includes(q)) matches.push('Filename');
-      if (docCaseId.includes(q)) matches.push(`Case #${d.caseId}`);
-      if (docType.includes(q)) matches.push('Document Type');
-      if (docUploader.includes(q)) matches.push('Uploader');
-      if (docHash.includes(q)) matches.push('Digital Fingerprint');
-      if (docOcrText.includes(q)) matches.push('OCR Extracted Text');
+  // Close filter popover on outside click
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (filterMenuRef.current && !filterMenuRef.current.contains(event.target)) {
+        setFilterMenuOpen(false);
+      }
     }
-
-    const matchQuery = !q || matches.length > 0;
-    const matchCase = caseFilter === 'ALL' || d.caseId === caseFilter;
-    const matchType = typeFilter === 'ALL' || (d.category || d.type) === typeFilter;
-    const matchClassification = classificationFilter === 'ALL' || d.classification === classificationFilter;
-    const matchStatus = statusFilter === 'ALL' || (statusFilter === 'VERIFIED' && !d.isTampered) || (statusFilter === 'TAMPERED' && d.isTampered);
-
-    const isVisible = matchQuery && matchCase && matchType && matchClassification && matchStatus;
-    const ocrSnippet = q && docOcrText.includes(q) ? getOcrSnippet(d.ocr.text, query) : null;
-
-    return {
-      ...d,
-      isVisible,
-      matchReasons: matches,
-      ocrSnippet
+    if (filterMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
     };
-  }).filter(d => d.isVisible);
+  }, [filterMenuOpen]);
+
+  // Global keyboard shortcut: Cmd+K / Ctrl+K to focus search input
+  useEffect(() => {
+    function handleKeyDown(e) {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  // Distinct document types
+  const documentTypes = useMemo(() => {
+    const types = new Set();
+    documents.forEach(d => {
+      const t = d.category || d.type;
+      if (t) types.add(t);
+    });
+    return Array.from(types).sort();
+  }, [documents]);
+
+  // Process search results with real filtering, sorting, and RBAC
+  const effectiveUser = currentUser || currentRole;
+  const filteredResults = useMemo(() => {
+    return filterAndSortSearchResults(
+      documents,
+      cases,
+      query,
+      {
+        caseFilter,
+        typeFilter,
+        classificationFilter,
+        statusFilter
+      },
+      sortOption,
+      effectiveUser
+    );
+  }, [documents, cases, query, caseFilter, typeFilter, classificationFilter, statusFilter, sortOption, effectiveUser]);
+
+  // Active filters count
+  const activeFiltersCount = useMemo(() => {
+    let count = 0;
+    if (caseFilter !== 'ALL') count++;
+    if (typeFilter !== 'ALL') count++;
+    if (classificationFilter !== 'ALL') count++;
+    if (statusFilter !== 'ALL') count++;
+    return count;
+  }, [caseFilter, typeFilter, classificationFilter, statusFilter]);
+
+  const resetFilters = () => {
+    setQuery('');
+    setCaseFilter('ALL');
+    setTypeFilter('ALL');
+    setClassificationFilter('ALL');
+    setStatusFilter('ALL');
+    setSortOption('relevance');
+  };
+
+  const handleDocumentClick = (doc) => {
+    if (onViewDocument) {
+      onViewDocument(doc, doc.caseItem);
+    }
+  };
+
+  const handleCaseClick = (e, caseItem) => {
+    e.stopPropagation();
+    if (onSelectCase && caseItem) {
+      onSelectCase(caseItem);
+    }
+  };
+
+  const isPreSearch = !query.trim() && activeFiltersCount === 0;
 
   return (
-    <div className="space-y-6">
-      
-      {/* Search Header Banner */}
-      <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-2xs space-y-4">
-        <div>
-          <div className="flex items-center space-x-2">
-            <span className="text-[11px] font-medium bg-blue-50 text-blue-700 border border-blue-200 px-2 py-0.5 rounded-full">
-              Full-Text & Metadata Index
-            </span>
-            <span className="text-xs text-slate-500 font-mono">
-              Client-Side Tesseract OCR
-            </span>
-          </div>
-          <h1 className="text-2xl font-semibold tracking-tight text-slate-900 mt-1.5 flex items-center gap-2">
-            <Search className="w-5 h-5 text-blue-600" />
-            Universal Document & Evidentiary Search
-          </h1>
-          <p className="text-sm font-normal text-slate-500 mt-1 max-w-4xl">
-            Query across case files, metadata, cryptographic hashes, and text extracted from images, PDFs, and documents.
-          </p>
-        </div>
-
-        {/* Search Input Bar */}
-        <div className="relative">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
-          <input
-            type="text"
-            placeholder="Search by keyword, case ID, filename, or OCR extracted text..."
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            className="w-full bg-slate-50 border border-slate-300 rounded-xl pl-10 pr-4 py-3 text-sm font-normal text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white"
-          />
-        </div>
-
-        {/* Filter Pills */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs pt-1">
-          <div>
-            <label className="text-slate-600 block mb-1 font-medium text-xs">Filter by Case:</label>
-            <select
-              value={caseFilter}
-              onChange={(e) => setCaseFilter(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500 text-xs font-normal cursor-pointer"
-            >
-              <option value="ALL">All Cases</option>
-              {cases.map(c => (
-                <option key={c.id} value={c.caseNumber}>Case #{c.caseNumber}</option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="text-slate-600 block mb-1 font-medium text-xs">Document Type:</label>
-            <select
-              value={typeFilter}
-              onChange={(e) => setTypeFilter(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500 text-xs font-normal cursor-pointer"
-            >
-              <option value="ALL">All Types</option>
-              <option value="Investigation Report">Investigation Report</option>
-              <option value="FIR">First Information Report</option>
-              <option value="Forensic Report">Forensic Report</option>
-              <option value="Evidence Record">Evidence Record</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="text-slate-600 block mb-1 font-medium text-xs">Security Clearance:</label>
-            <select
-              value={classificationFilter}
-              onChange={(e) => setClassificationFilter(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500 text-xs font-normal cursor-pointer"
-            >
-              <option value="ALL">All Levels</option>
-              <option value="Confidential">Confidential</option>
-              <option value="Secret">Secret</option>
-              <option value="Top Secret">Top Secret</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="text-slate-600 block mb-1 font-medium text-xs">Integrity Status:</label>
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500 text-xs font-normal cursor-pointer"
-            >
-              <option value="ALL">All Statuses</option>
-              <option value="VERIFIED">Verified (Intact)</option>
-              <option value="TAMPERED">Tamper Flagged</option>
-            </select>
-          </div>
-        </div>
+    <div className="space-y-4">
+      {/* 1. COMPACT PAGE HEADER */}
+      <div className="pb-3 border-b border-slate-200">
+        <h1 className="text-2xl font-semibold tracking-tight text-slate-900 flex items-center gap-2">
+          <Search className="w-5 h-5 text-blue-600" />
+          Search
+        </h1>
+        <p className="text-xs text-slate-500 mt-0.5">
+          Find documents and evidence across authorized cases.
+        </p>
       </div>
 
-      {/* Search Results Summary */}
-      <div className="flex items-center justify-between text-xs text-slate-500 px-1">
-        <span>Found <strong>{filteredResults.length}</strong> matching records across active cases</span>
+      {/* 2. PRIMARY SEARCH CONTROL */}
+      <div className="relative">
+        <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+        <input
+          ref={searchInputRef}
+          type="text"
+          placeholder="Search documents, cases, filenames, OCR text, or hash..."
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          className="w-full bg-white border border-slate-300 rounded-xl pl-10 pr-9 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-2xs transition-colors"
+        />
         {query && (
           <button
             onClick={() => setQuery('')}
-            className="text-blue-600 hover:underline font-medium"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5"
+            title="Clear search"
           >
-            Clear Search
+            <X className="w-4 h-4" />
           </button>
         )}
       </div>
 
-      {/* Results List */}
-      <div className="space-y-3">
-        {filteredResults.map(doc => {
-          const isTampered = doc.isTampered;
-
-          return (
-            <div
-              key={doc.id}
-              className="bg-white border border-slate-200 hover:border-blue-300 rounded-xl p-4 shadow-2xs hover:shadow-xs transition-all space-y-3"
+      {/* 3. TOOLBAR: FILTERS, SORT, RESULTS SUMMARY */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+        <div className="flex items-center space-x-2">
+          {/* Filters Popover Button */}
+          <div className="relative" ref={filterMenuRef}>
+            <button
+              onClick={() => setFilterMenuOpen(prev => !prev)}
+              className={`inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
+                activeFiltersCount > 0 || filterMenuOpen
+                  ? 'bg-blue-50 text-blue-700 border-blue-200'
+                  : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+              }`}
             >
-              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2">
-                <div className="space-y-1 min-w-0">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="font-mono text-xs font-medium text-blue-700 bg-blue-50 border border-blue-200 px-1.5 py-0.5 rounded">
-                      #{doc.caseId}
-                    </span>
-                    <span className="text-xs font-medium text-slate-700">
-                      {doc.category || doc.type || 'Record'}
-                    </span>
-                    <span className="font-mono text-xs font-medium text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded">
-                      {doc.currentVersion}
-                    </span>
-                    <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full border ${
-                      doc.classification === 'Top Secret' ? 'bg-red-50 text-red-700 border-red-200' :
-                      doc.classification === 'Secret' ? 'bg-amber-50 text-amber-700 border-amber-200' :
-                      'bg-blue-50 text-blue-700 border-blue-200'
-                    }`}>
-                      {doc.classification}
-                    </span>
+              <SlidersHorizontal className="w-3.5 h-3.5" />
+              <span>Filters</span>
+              {activeFiltersCount > 0 && (
+                <span className="bg-blue-600 text-white text-[10px] font-semibold px-1.5 py-0.2 rounded-full">
+                  {activeFiltersCount}
+                </span>
+              )}
+              <ChevronDown className={`w-3.5 h-3.5 transition-transform ${filterMenuOpen ? 'rotate-180' : ''}`} />
+            </button>
 
-                    {isTampered ? (
-                      <span className="text-[11px] font-medium text-red-700 bg-red-100 px-2 py-0.5 rounded-full border border-red-200 flex items-center gap-1">
-                        <AlertTriangle className="w-3 h-3 text-red-600" />
-                        <span>TAMPER MISMATCH</span>
-                      </span>
-                    ) : (
-                      <span className="text-[11px] font-medium text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200 flex items-center gap-1">
-                        <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                        <span>VERIFIED</span>
-                      </span>
-                    )}
-                  </div>
-
-                  <h3 className="text-[15px] font-semibold text-slate-900 mt-1">
-                    {doc.name}
-                  </h3>
-
-                  <div className="text-[13px] text-slate-500 font-normal">
-                    Uploaded by <strong className="font-medium text-slate-700">{doc.createdBy || doc.uploadedBy || 'Authorized Officer'}</strong> on {doc.createdAt ? new Date(doc.createdAt).toLocaleDateString() : (doc.uploadDate || 'Recent')} • Size: <span className="font-mono">{doc.size ? `${(doc.size / 1024).toFixed(1)} KB` : (doc.fileSize || 'N/A')}</span>
-                  </div>
-                </div>
-
-                <div className="flex items-center space-x-2 shrink-0">
-                  <button
-                    onClick={() => onViewDocument(doc, doc.caseItem)}
-                    className="inline-flex items-center space-x-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors"
-                  >
-                    <Eye className="w-3.5 h-3.5" />
-                    <span>View Record</span>
-                  </button>
-
-                  {doc.caseItem && (
+            {/* Filter Popover Menu */}
+            {filterMenuOpen && (
+              <div className="absolute left-0 mt-1.5 w-72 bg-white border border-slate-200 rounded-xl shadow-lg z-30 p-4 space-y-3.5 text-xs">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                  <span className="font-semibold text-slate-900">Filter Documents</span>
+                  {activeFiltersCount > 0 && (
                     <button
-                      onClick={() => onSelectCase(doc.caseItem)}
-                      className="inline-flex items-center space-x-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow-2xs transition-colors"
+                      onClick={resetFilters}
+                      className="text-[11px] text-blue-600 hover:text-blue-800 font-medium inline-flex items-center gap-1"
                     >
-                      <span>Open Case</span>
-                      <ChevronRight className="w-3.5 h-3.5" />
+                      <RotateCcw className="w-3 h-3" />
+                      <span>Reset All</span>
                     </button>
                   )}
                 </div>
+
+                {/* Case Filter */}
+                <div>
+                  <label className="text-[11px] font-medium text-slate-600 block mb-1">
+                    Case Dossier
+                  </label>
+                  <select
+                    value={caseFilter}
+                    onChange={(e) => setCaseFilter(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-md py-1.5 px-2 text-xs text-slate-800 focus:outline-none focus:border-blue-500"
+                  >
+                    <option value="ALL">All Cases</option>
+                    {cases.map(c => (
+                      <option key={c.id} value={c.caseNumber}>
+                        {formatCaseId(c.caseNumber)}: {c.title?.slice(0, 30)}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Document Type Filter */}
+                <div>
+                  <label className="text-[11px] font-medium text-slate-600 block mb-1">
+                    Document Type
+                  </label>
+                  <select
+                    value={typeFilter}
+                    onChange={(e) => setTypeFilter(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-md py-1.5 px-2 text-xs text-slate-800 focus:outline-none focus:border-blue-500"
+                  >
+                    <option value="ALL">All Types</option>
+                    {documentTypes.map(t => (
+                      <option key={t} value={t}>{t}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Security Clearance Filter */}
+                <div>
+                  <label className="text-[11px] font-medium text-slate-600 block mb-1">
+                    Security Clearance
+                  </label>
+                  <select
+                    value={classificationFilter}
+                    onChange={(e) => setClassificationFilter(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-md py-1.5 px-2 text-xs text-slate-800 focus:outline-none focus:border-blue-500"
+                  >
+                    <option value="ALL">All Levels</option>
+                    <option value="Confidential">Confidential</option>
+                    <option value="Secret">Secret</option>
+                    <option value="Top Secret">Top Secret</option>
+                  </select>
+                </div>
+
+                {/* Integrity Status Filter */}
+                <div>
+                  <label className="text-[11px] font-medium text-slate-600 block mb-1">
+                    Integrity Status
+                  </label>
+                  <select
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-md py-1.5 px-2 text-xs text-slate-800 focus:outline-none focus:border-blue-500"
+                  >
+                    <option value="ALL">All Statuses</option>
+                    <option value="VERIFIED">Verified (Intact)</option>
+                    <option value="TAMPERED">Tamper Flagged (Mismatch)</option>
+                  </select>
+                </div>
               </div>
-
-              {/* Match reasons & OCR context */}
-              {query && doc.matchReasons && doc.matchReasons.length > 0 && (
-                <div className="pt-2 border-t border-slate-100 flex flex-wrap items-center gap-1.5 text-[11px]">
-                  <span className="text-slate-400 font-medium">Matched in:</span>
-                  {doc.matchReasons.map((reason, i) => (
-                    <span 
-                      key={i} 
-                      className={`px-2 py-0.5 rounded-full font-medium border ${
-                        reason === 'OCR Extracted Text'
-                          ? 'bg-blue-50 text-blue-700 border-blue-200'
-                          : reason === 'Filename'
-                          ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                          : 'bg-slate-100 text-slate-700 border-slate-200'
-                      }`}
-                    >
-                      {reason}
-                    </span>
-                  ))}
-                </div>
-              )}
-
-              {/* OCR Contextual Snippet if matched in OCR */}
-              {doc.ocrSnippet && (
-                <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-700 space-y-1">
-                  <div className="flex items-center space-x-1.5 text-[11px] text-blue-700 font-medium uppercase tracking-wider">
-                    <span>OCR Extracted Text Snippet</span>
-                  </div>
-                  <div className="font-mono text-xs leading-relaxed break-words">
-                    <HighlightedSnippet text={doc.ocrSnippet} query={query} />
-                  </div>
-                </div>
-              )}
-
-              {/* OCR Status Pill when not searching or when OCR available */}
-              {!query && doc.ocr?.status === 'COMPLETED' && (
-                <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
-                  <span className="inline-flex items-center space-x-1 text-blue-700 font-medium text-xs">
-                    <span className="w-1.5 h-1.5 rounded-full bg-blue-600"></span>
-                    <span>OCR Text Indexed ({doc.ocr.pageCount || 1} {doc.ocr.pageCount === 1 ? 'page' : 'pages'})</span>
-                  </span>
-                  <span className="font-mono text-xs text-slate-400">
-                    Language: {doc.ocr.language?.toUpperCase() || 'ENG'}
-                  </span>
-                </div>
-              )}
-            </div>
-          );
-        })}
-
-        {filteredResults.length === 0 && (
-          <div className="text-center py-12 bg-white border border-slate-200 rounded-xl p-8">
-            <FileText className="w-10 h-10 text-slate-300 mx-auto mb-2" />
-            <div className="font-semibold text-slate-700 text-sm">No matching records found</div>
-            <p className="text-xs text-slate-500 mt-1 font-normal">
-              Try adjusting your search keywords or clearing active filters.
-            </p>
+            )}
           </div>
-        )}
+
+          {/* Sort Dropdown */}
+          <div className="relative">
+            <select
+              aria-label="Sort search results"
+              value={sortOption}
+              onChange={(e) => setSortOption(e.target.value)}
+              className="bg-white border border-slate-200 rounded-lg py-1.5 pl-2.5 pr-7 text-xs text-slate-700 font-medium focus:outline-none focus:border-blue-500 cursor-pointer appearance-none"
+            >
+              {query && <option value="relevance">Sort: Relevance</option>}
+              <option value="newest">Sort: Newest</option>
+              <option value="oldest">Sort: Oldest</option>
+              <option value="name">Sort: Filename (A-Z)</option>
+              <option value="caseId">Sort: Case ID</option>
+            </select>
+            <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
+          </div>
+        </div>
+
+        {/* Factual Result Count */}
+        <div className="text-xs text-slate-500 font-mono">
+          {!isPreSearch && (
+            <span>
+              {filteredResults.length} {filteredResults.length === 1 ? 'matching document' : 'matching documents'}
+            </span>
+          )}
+        </div>
       </div>
 
+      {/* Active Filter Chips */}
+      {activeFiltersCount > 0 && (
+        <div className="flex flex-wrap items-center gap-1.5 text-xs">
+          <span className="text-[11px] text-slate-500">Active filters:</span>
+          {caseFilter !== 'ALL' && (
+            <span className="inline-flex items-center gap-1 bg-slate-100 text-slate-700 px-2 py-0.5 rounded text-[11px]">
+              Case: #{caseFilter}
+              <button onClick={() => setCaseFilter('ALL')} className="hover:text-slate-900">
+                <X className="w-3 h-3" />
+              </button>
+            </span>
+          )}
+          {typeFilter !== 'ALL' && (
+            <span className="inline-flex items-center gap-1 bg-slate-100 text-slate-700 px-2 py-0.5 rounded text-[11px]">
+              Type: {typeFilter}
+              <button onClick={() => setTypeFilter('ALL')} className="hover:text-slate-900">
+                <X className="w-3 h-3" />
+              </button>
+            </span>
+          )}
+          {classificationFilter !== 'ALL' && (
+            <span className="inline-flex items-center gap-1 bg-slate-100 text-slate-700 px-2 py-0.5 rounded text-[11px]">
+              Clearance: {classificationFilter}
+              <button onClick={() => setClassificationFilter('ALL')} className="hover:text-slate-900">
+                <X className="w-3 h-3" />
+              </button>
+            </span>
+          )}
+          {statusFilter !== 'ALL' && (
+            <span className="inline-flex items-center gap-1 bg-slate-100 text-slate-700 px-2 py-0.5 rounded text-[11px]">
+              Status: {statusFilter === 'VERIFIED' ? 'Verified' : 'Tamper Flagged'}
+              <button onClick={() => setStatusFilter('ALL')} className="hover:text-slate-900">
+                <X className="w-3 h-3" />
+              </button>
+            </span>
+          )}
+          <button
+            onClick={resetFilters}
+            className="text-[11px] text-blue-600 hover:text-blue-800 font-medium ml-1"
+          >
+            Clear all
+          </button>
+        </div>
+      )}
+
+      {/* 4. RESULTS PRESENTATION: PRE-SEARCH, NO RESULTS, OR ENTERPRISE LIST */}
+      {isPreSearch ? (
+        /* PRE-SEARCH STATE */
+        <div className="bg-white border border-slate-200 rounded-xl p-12 text-center shadow-2xs">
+          <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center mx-auto mb-3">
+            <Search className="w-6 h-6" />
+          </div>
+          <h3 className="text-base font-semibold text-slate-900">Search documents and evidence</h3>
+          <p className="text-xs text-slate-500 max-w-md mx-auto mt-1 font-normal">
+            Use keywords, case IDs, filenames, OCR text, or document metadata to find evidence across authorized cases.
+          </p>
+        </div>
+      ) : filteredResults.length === 0 ? (
+        /* NO RESULTS MATCH */
+        <div className="bg-white border border-slate-200 rounded-xl p-12 text-center shadow-2xs">
+          <div className="w-12 h-12 rounded-xl bg-slate-100 text-slate-500 flex items-center justify-center mx-auto mb-3">
+            <FileText className="w-6 h-6" />
+          </div>
+          <h3 className="text-base font-semibold text-slate-900">No matching documents</h3>
+          <p className="text-xs text-slate-500 max-w-sm mx-auto mt-1 mb-4 font-normal">
+            Try a different keyword or adjust your active filters.
+          </p>
+          <button
+            onClick={resetFilters}
+            className="inline-flex items-center space-x-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 px-3.5 py-2 rounded-lg text-xs font-medium transition-colors"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+            <span>Clear Filters</span>
+          </button>
+        </div>
+      ) : (
+        /* ENTERPRISE RESULT LIST */
+        <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-2xs divide-y divide-slate-100">
+          {filteredResults.map(doc => {
+            const isTampered = doc.isTampered || doc.integrityStatus === 'MISMATCH';
+            const caseIdFormatted = formatCaseId(doc.caseId);
+
+            return (
+              <div
+                key={doc.id}
+                onClick={() => handleDocumentClick(doc)}
+                className="group p-4 hover:bg-slate-50/80 transition-colors cursor-pointer space-y-2.5"
+                tabIndex={0}
+                role="button"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    handleDocumentClick(doc);
+                  }
+                }}
+              >
+                {/* Header row: Case ID, Filename, Status, and Actions */}
+                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                  <div className="space-y-1.5 min-w-0 flex-1">
+                    {/* Primary Filename */}
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-[15px] font-semibold text-slate-900 group-hover:text-blue-600 transition-colors truncate">
+                        {doc.name}
+                      </h3>
+                      {doc.mimeType && (
+                        <span className="text-[10px] font-mono text-slate-500 uppercase bg-slate-100 px-1.5 py-0.2 rounded border border-slate-200 shrink-0">
+                          {doc.mimeType.split('/').pop().replace('vnd.openxmlformats-officedocument.presentationml.presentation', 'pptx').replace('vnd.openxmlformats-officedocument.wordprocessingml.document', 'docx')}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Secondary metadata badges */}
+                    <div className="flex flex-wrap items-center gap-1.5 text-xs">
+                      {/* Case ID badge: clickable to open case */}
+                      <button
+                        onClick={(e) => handleCaseClick(e, doc.caseItem)}
+                        title={`Open Case Dossier ${caseIdFormatted}`}
+                        className="font-mono text-xs font-semibold text-blue-700 bg-blue-50/80 hover:bg-blue-100 border border-blue-200 px-2 py-0.5 rounded transition-colors"
+                      >
+                        {caseIdFormatted}
+                      </button>
+
+                      <span className="text-slate-400">•</span>
+
+                      <span className="text-slate-600 font-medium">
+                        {doc.category || doc.type || 'Document'}
+                      </span>
+
+                      <span className="text-slate-400">•</span>
+
+                      <span className="font-mono text-slate-600 text-[11px] bg-slate-100 border border-slate-200 px-1.5 py-0.2 rounded">
+                        {doc.currentVersion || 'V1'}
+                      </span>
+
+                      <span className="text-slate-400">•</span>
+
+                      <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full border ${
+                        doc.classification === 'Top Secret' ? 'bg-red-50 text-red-700 border-red-200' :
+                        doc.classification === 'Secret' ? 'bg-amber-50 text-amber-700 border-amber-200' :
+                        'bg-blue-50 text-blue-700 border-blue-200'
+                      }`}>
+                        {doc.classification || 'Confidential'}
+                      </span>
+
+                      {/* Integrity Status Pill */}
+                      {isTampered ? (
+                        <span className="text-[10px] font-medium text-red-700 bg-red-50 px-2 py-0.5 rounded-full border border-red-200 inline-flex items-center gap-1">
+                          <AlertTriangle className="w-3 h-3 text-red-600" />
+                          <span>⚠ Mismatch</span>
+                        </span>
+                      ) : (
+                        <span className="text-[10px] font-medium text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200 inline-flex items-center gap-1">
+                          <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                          <span>✓ Verified</span>
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Tertiary metadata */}
+                    <div className="text-xs text-slate-500 font-normal">
+                      Uploaded by <span className="font-medium text-slate-700">{doc.createdBy || doc.uploadedBy || 'Authorized Officer'}</span> on {doc.createdAt ? new Date(doc.createdAt).toLocaleDateString() : (doc.uploadDate || 'Recent')} • Size: <span className="font-mono">{doc.size ? `${(doc.size / 1024).toFixed(1)} KB` : (doc.fileSize || 'N/A')}</span>
+                    </div>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex items-center space-x-1.5 shrink-0 self-start sm:self-center">
+                    {doc.caseItem && (
+                      <button
+                        onClick={(e) => handleCaseClick(e, doc.caseItem)}
+                        title="Open Case Dossier"
+                        className="inline-flex items-center space-x-1 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors"
+                      >
+                        <FolderGit2 className="w-3.5 h-3.5 text-slate-500" />
+                        <span>Case</span>
+                      </button>
+                    )}
+
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDocumentClick(doc);
+                      }}
+                      className="inline-flex items-center space-x-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow-xs transition-colors"
+                    >
+                      <Eye className="w-3.5 h-3.5" />
+                      <span>Open</span>
+                      <ChevronRight className="w-3 h-3" />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Match Reasons Tags (when search active) */}
+                {query && doc.matchReasons && doc.matchReasons.length > 0 && (
+                  <div className="pt-2 border-t border-slate-100 flex flex-wrap items-center gap-1 text-[11px]">
+                    <span className="text-slate-400 font-medium mr-0.5">Matched in:</span>
+                    {doc.matchReasons.map((reason, i) => (
+                      <span
+                        key={i}
+                        className={`px-1.5 py-0.2 rounded font-medium border ${
+                          reason === 'OCR Extracted Text'
+                            ? 'bg-blue-50 text-blue-700 border-blue-200'
+                            : reason === 'Filename'
+                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                            : 'bg-slate-100 text-slate-700 border-slate-200'
+                        }`}
+                      >
+                        {reason}
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                {/* OCR Contextual Snippet if matched in OCR */}
+                {doc.ocrSnippet && (
+                  <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-700 space-y-1">
+                    <div className="text-[10px] font-medium text-blue-700 uppercase tracking-wider">
+                      OCR Text Match
+                    </div>
+                    <div className="font-mono text-xs leading-relaxed break-words text-slate-800">
+                      <HighlightedSnippet text={doc.ocrSnippet} query={query} />
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

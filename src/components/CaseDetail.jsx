@@ -279,14 +279,14 @@ export default function CaseDetail({
                       <span>Sec 65B</span>
                     </button>
 
-                    {/* Simulate Tamper (Test/Audit function) */}
+                    {/* Test Tamper Detection */}
                     <button
                       onClick={() => onSimulateTamper(doc, caseItem)}
-                      title="Demonstrate Tamper Detection (Educational/Security Demo)"
+                      title="Test Cryptographic Tamper Detection"
                       className="inline-flex items-center space-x-1 bg-red-950/40 hover:bg-red-900/60 text-red-400 border border-red-800/60 px-2.5 py-1.5 rounded-lg text-[11px] font-mono transition-colors"
                     >
                       <AlertTriangle className="w-3 h-3 text-red-400" />
-                      <span>Tamper Demo</span>
+                      <span>Test Tamper</span>
                     </button>
                   </div>
 

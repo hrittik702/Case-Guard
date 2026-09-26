@@ -1,27 +1,23 @@
 import React from 'react';
 import { 
   LayoutDashboard, 
-  FolderGit2, 
+  FolderOpen, 
   FileText, 
   ShieldCheck, 
   History, 
   Search, 
-  ShieldAlert, 
-  X,
   Lock,
-  ChevronRight,
-  UserCheck
+  X,
+  ChevronRight
 } from 'lucide-react';
-import { ROLES } from '../data/roles';
-import { DEMO_USERS } from '../data/demoUsers';
+import CaseGuardLogo from './CaseGuardLogo';
+import RoleIcon from './RoleIcon';
 
 export default function SidebarNav({ 
   currentView, 
   setCurrentView, 
-  currentUser,
+  currentUser, 
   currentRole, 
-  setCurrentRole,
-  onSwitchUser,
   integrityAlertCount = 0,
   casesCount = 0,
   documentsCount = 0,
@@ -30,7 +26,7 @@ export default function SidebarNav({
 }) {
   const navItems = [
     { id: 'dashboard', label: 'Overview', icon: LayoutDashboard, badge: null },
-    { id: 'cases', label: 'Cases', icon: FolderGit2, badge: casesCount > 0 ? `${casesCount}` : null },
+    { id: 'cases', label: 'Cases', icon: FolderOpen, badge: casesCount > 0 ? `${casesCount}` : null },
     { id: 'documents', label: 'Documents', icon: FileText, badge: documentsCount > 0 ? `${documentsCount}` : null },
     { id: 'integrity', label: 'Integrity', icon: ShieldCheck, badge: integrityAlertCount > 0 ? `${integrityAlertCount} Alert` : null, alert: integrityAlertCount > 0 },
     { id: 'audit', label: 'Audit Trail', icon: History, badge: null },
@@ -44,9 +40,8 @@ export default function SidebarNav({
   };
 
   const activeName = currentUser?.name || currentRole?.name || 'Officer';
-  const activeDesignation = currentUser?.designation || currentRole?.designation || 'Investigation Officer';
+  const activeRoleName = currentRole?.name || currentUser?.designation || 'Investigation Officer';
   const activeClearance = currentUser?.clearance || currentRole?.clearance || 'Confidential';
-  const activeAvatar = currentRole?.avatar || '👮';
 
   return (
     <>
@@ -66,29 +61,13 @@ export default function SidebarNav({
         {/* Top Branding Section */}
         <div>
           <div className="h-16 flex items-center justify-between px-5 border-b border-slate-100">
-            <div className="flex items-center space-x-2.5">
-              <div className="w-9 h-9 rounded-lg bg-slate-900 flex items-center justify-center text-white shadow-sm">
-                <ShieldCheck className="w-5 h-5 text-blue-400" />
-              </div>
-              <div>
-                <div className="flex items-center space-x-1.5">
-                  <span className="font-semibold text-base tracking-tight text-slate-900 font-mono">
-                    CASEGUARD
-                  </span>
-                  <span className="text-[10px] font-medium bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded border border-blue-200">
-                    DMS
-                  </span>
-                </div>
-                <div className="text-xs text-slate-500 font-normal leading-none mt-0.5">
-                  Secure Legal & Case Vault
-                </div>
-              </div>
-            </div>
+            <CaseGuardLogo size="md" />
 
             {/* Mobile Close Button */}
             <button 
               onClick={() => setMobileOpen(false)}
               className="lg:hidden text-slate-400 hover:text-slate-600 p-1"
+              aria-label="Close navigation"
             >
               <X className="w-5 h-5" />
             </button>
@@ -132,28 +111,16 @@ export default function SidebarNav({
           </nav>
         </div>
 
-        {/* Bottom User & Role Section */}
-        <div className="p-4 border-t border-slate-200 bg-slate-50/70">
-          <div className="text-[11px] font-medium uppercase tracking-wider text-slate-500 mb-2">
-            Active Session (RBAC)
-          </div>
-
-          <div className="bg-white border border-slate-200 rounded-xl p-3 shadow-2xs">
-            <div className="flex items-center space-x-2.5 mb-2">
-              <span className="text-xl">{activeAvatar}</span>
-              <div className="min-w-0 flex-1">
-                <div className="text-xs font-semibold text-slate-900 truncate">
-                  {activeName}
-                </div>
-                <div className="text-xs text-slate-500 truncate font-normal">
-                  {activeDesignation}
-                </div>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-xs">
-              <span className="text-slate-500 font-normal">Clearance:</span>
-              <span className={`px-1.5 py-0.5 rounded font-mono font-medium text-[10px] uppercase border ${
+        {/* Bottom User & Role Section: Clean, Institutional Session */}
+        <div className="p-3 border-t border-slate-200 bg-slate-50/50">
+          <div 
+            onClick={() => handleNavClick('access')}
+            title="View Active Session & Access Policies"
+            className="group bg-white hover:bg-blue-50/30 border border-slate-200 hover:border-slate-300 rounded-lg p-2.5 shadow-2xs space-y-2 cursor-pointer transition-colors"
+          >
+            <div className="flex items-center justify-between text-[10px] text-slate-400 font-mono font-medium tracking-wider">
+              <span>CURRENT ACCOUNT</span>
+              <span className={`px-1.5 py-0.5 rounded font-mono font-medium text-[9px] uppercase border shrink-0 ${
                 activeClearance === 'Top Secret' ? 'bg-red-50 text-red-700 border-red-200' :
                 activeClearance === 'Secret' ? 'bg-amber-50 text-amber-700 border-amber-200' :
                 'bg-blue-50 text-blue-700 border-blue-200'
@@ -162,27 +129,19 @@ export default function SidebarNav({
               </span>
             </div>
 
-            {/* Switch Active User / Persona Dropdown */}
-            <div className="mt-2.5">
-              <label className="text-[11px] text-slate-500 font-medium block mb-1">Active Officer Persona:</label>
-              <select
-                aria-label="Switch User Persona"
-                value={currentUser?.email || DEMO_USERS[0].email}
-                onChange={(e) => {
-                  const target = DEMO_USERS.find(u => u.email === e.target.value);
-                  if (target) {
-                    if (onSwitchUser) onSwitchUser(target);
-                    else if (setCurrentRole) setCurrentRole(target.role);
-                  }
-                }}
-                className="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs rounded-lg py-1.5 px-2 focus:outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer font-medium"
-              >
-                {DEMO_USERS.map(u => (
-                  <option key={u.id} value={u.email}>
-                    {u.role.avatar} {u.name} ({u.clearance})
-                  </option>
-                ))}
-              </select>
+            <div className="flex items-center space-x-2.5">
+              <div className="w-8 h-8 rounded-lg bg-slate-100 group-hover:bg-blue-50 border border-slate-200 group-hover:border-blue-200 flex items-center justify-center text-slate-700 shrink-0 transition-colors">
+                <RoleIcon role={currentRole} className="w-4 h-4 text-slate-700 group-hover:text-blue-700" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="text-xs font-semibold text-slate-900 group-hover:text-blue-700 transition-colors truncate">
+                  {activeName}
+                </div>
+                <div className="text-[11px] text-slate-500 truncate font-normal">
+                  {activeRoleName}
+                </div>
+              </div>
+              <ChevronRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-slate-500 shrink-0 transition-colors" />
             </div>
           </div>
         </div>

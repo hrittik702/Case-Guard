@@ -50,17 +50,22 @@ export default function CreateCaseModal({ onClose, onCaseCreated, currentRole, a
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs overflow-y-auto">
-      <div className="bg-white border border-slate-200 rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden my-6">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs overflow-y-auto">
+      <div 
+        className="bg-white border border-slate-200 rounded-xl w-full max-w-lg shadow-xl overflow-hidden my-6 animate-in zoom-in-95 duration-150"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="create-case-title"
+      >
         
         {/* Header */}
-        <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/70">
+        <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50/70">
           <div className="flex items-center space-x-2.5">
-            <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white">
+            <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white shrink-0">
               <FolderPlus className="w-4 h-4" />
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-slate-900 tracking-tight">
+              <h2 id="create-case-title" className="text-lg font-semibold text-slate-900 tracking-tight">
                 Create New Case
               </h2>
               <p className="text-xs text-slate-500 font-normal">
@@ -71,7 +76,9 @@ export default function CreateCaseModal({ onClose, onCaseCreated, currentRole, a
 
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-600 p-1 rounded hover:bg-slate-100"
+            className="text-slate-400 hover:text-slate-700 hover:bg-slate-100 p-1.5 rounded-lg transition-colors"
+            aria-label="Close dialog"
+            title="Close"
           >
             <X className="w-4 h-4" />
           </button>
@@ -81,22 +88,24 @@ export default function CreateCaseModal({ onClose, onCaseCreated, currentRole, a
         <form onSubmit={handleSubmit} className="p-6 space-y-4 text-xs">
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-slate-700 block mb-1 font-medium text-xs">Case Identifier:</label>
+              <label htmlFor="create-case-id" className="text-slate-700 block mb-1 font-medium text-xs">Case Identifier:</label>
               <input
+                id="create-case-id"
                 type="text"
                 required
                 value={caseNumber}
                 onChange={(e) => setCaseNumber(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-1.5 text-slate-900 font-mono text-xs font-medium focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="w-full h-9 bg-white border border-slate-300 rounded-lg px-3 text-slate-900 font-mono text-xs font-medium focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-500"
               />
             </div>
 
             <div>
-              <label className="text-slate-700 block mb-1 font-medium text-xs">Case Type:</label>
+              <label htmlFor="create-case-type" className="text-slate-700 block mb-1 font-medium text-xs">Case Type:</label>
               <select
+                id="create-case-type"
                 value={type}
                 onChange={(e) => setType(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 text-sm font-normal text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="w-full h-9 bg-white border border-slate-300 rounded-lg px-2.5 text-xs font-normal text-slate-900 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-500"
               >
                 <option value="Financial Fraud">Financial Fraud</option>
                 <option value="Cybercrime">Cybercrime</option>
@@ -109,24 +118,26 @@ export default function CreateCaseModal({ onClose, onCaseCreated, currentRole, a
           </div>
 
           <div>
-            <label className="text-slate-700 block mb-1 font-medium text-xs">Case Title:</label>
+            <label htmlFor="create-case-title-input" className="text-slate-700 block mb-1 font-medium text-xs">Case Title:</label>
             <input
+              id="create-case-title-input"
               type="text"
               required
               placeholder="e.g. State vs. Enterprise Syndicate Investigation"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-1.5 text-sm font-normal text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="w-full h-9 bg-white border border-slate-300 rounded-lg px-3 text-xs font-normal text-slate-900 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-500"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-slate-700 block mb-1 font-medium text-xs">Priority:</label>
+              <label htmlFor="create-case-priority" className="text-slate-700 block mb-1 font-medium text-xs">Priority:</label>
               <select
+                id="create-case-priority"
                 value={priority}
                 onChange={(e) => setPriority(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 text-sm font-normal text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="w-full h-9 bg-white border border-slate-300 rounded-lg px-2.5 text-xs font-normal text-slate-900 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-500"
               >
                 <option value="Low">Low</option>
                 <option value="Medium">Medium</option>
@@ -136,11 +147,12 @@ export default function CreateCaseModal({ onClose, onCaseCreated, currentRole, a
             </div>
 
             <div>
-              <label className="text-slate-700 block mb-1 font-medium text-xs">Initial Status:</label>
+              <label htmlFor="create-case-status" className="text-slate-700 block mb-1 font-medium text-xs">Initial Status:</label>
               <select
+                id="create-case-status"
                 value={status}
                 onChange={(e) => setStatus(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 text-sm font-normal text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="w-full h-9 bg-white border border-slate-300 rounded-lg px-2.5 text-xs font-normal text-slate-900 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-500"
               >
                 <option value="Active">Active Investigation</option>
                 <option value="Pending Review">Pending Review</option>
@@ -151,13 +163,14 @@ export default function CreateCaseModal({ onClose, onCaseCreated, currentRole, a
           </div>
 
           <div>
-            <label className="text-slate-700 block mb-1 font-medium text-xs">Description / Scope Summary:</label>
+            <label htmlFor="create-case-description" className="text-slate-700 block mb-1 font-medium text-xs">Description / Scope Summary:</label>
             <textarea
+              id="create-case-description"
               rows={3}
               placeholder="Brief summary of the investigative scope or allegations..."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm font-normal text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="w-full bg-white border border-slate-300 rounded-lg p-2.5 text-xs font-normal text-slate-900 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-500"
             />
           </div>
 
@@ -165,14 +178,14 @@ export default function CreateCaseModal({ onClose, onCaseCreated, currentRole, a
             <button
               type="button"
               onClick={onClose}
-              className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3.5 py-2 rounded-lg font-medium text-xs"
+              className="bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 px-3.5 py-2 rounded-lg font-medium text-xs transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold text-xs shadow-xs flex items-center space-x-1.5"
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold text-xs shadow-xs flex items-center space-x-1.5 transition-colors"
             >
               <span>{isSubmitting ? 'Creating...' : 'Create Case'}</span>
               <ArrowRight className="w-3.5 h-3.5" />

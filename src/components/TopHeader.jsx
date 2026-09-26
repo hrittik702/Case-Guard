@@ -1,15 +1,16 @@
 import React from 'react';
-import { Menu, Search, AlertTriangle, ChevronRight, LogOut, Shield } from 'lucide-react';
+import { Menu, Search, AlertTriangle, ChevronRight } from 'lucide-react';
+import RoleIcon from './RoleIcon';
 
 export default function TopHeader({
   currentView,
   selectedCase,
   onOpenMobileMenu,
   onOpenSearch,
-  integrityAlertCount,
+  integrityAlertCount = 0,
   currentUser,
   currentRole,
-  onLogout
+  onNavigateToAccess
 }) {
   const getViewTitle = () => {
     switch (currentView) {
@@ -60,18 +61,21 @@ export default function TopHeader({
         </nav>
       </div>
 
-      {/* Right: Quick Search, Alerts, User Profile, and Sign Out */}
+      {/* Right: Quick Search, Alerts, and Active Officer Identity Badge */}
       <div className="flex items-center space-x-2 sm:space-x-3">
         
-        {/* Quick Search Trigger */}
-        <button
-          onClick={onOpenSearch}
-          className="hidden md:flex items-center space-x-2 bg-slate-100 hover:bg-slate-200/80 text-slate-500 hover:text-slate-800 px-3 py-1.5 rounded-lg text-xs font-medium border border-slate-200 transition-colors"
-        >
-          <Search className="w-3.5 h-3.5 text-slate-400" />
-          <span>Search cases or documents...</span>
-          <kbd className="bg-white border border-slate-300 text-[10px] px-1.5 py-0.5 rounded text-slate-500 font-mono font-medium">⌘K</kbd>
-        </button>
+        {/* Quick Search Trigger (hidden on dedicated Search view to prevent duplicate inputs) */}
+        {currentView !== 'search' && (
+          <button
+            onClick={onOpenSearch}
+            className="hidden md:flex items-center space-x-2 bg-slate-100 hover:bg-slate-200/80 text-slate-500 hover:text-slate-800 px-3 py-1.5 rounded-lg text-xs font-medium border border-slate-200 transition-colors"
+            aria-label="Search cases and documents"
+          >
+            <Search className="w-3.5 h-3.5 text-slate-400" />
+            <span>Search cases or documents...</span>
+            <kbd className="bg-white border border-slate-300 text-[10px] px-1.5 py-0.5 rounded text-slate-500 font-mono font-medium">⌘K</kbd>
+          </button>
+        )}
 
         {/* Integrity Alert Pill */}
         {integrityAlertCount > 0 && (
@@ -81,12 +85,16 @@ export default function TopHeader({
           </div>
         )}
 
-        {/* Active Officer Identity Badge */}
-        <div className="hidden sm:flex items-center space-x-2 bg-slate-50 border border-slate-200 px-2.5 py-1 rounded-lg">
-          <div className="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center text-xs">
-            {currentRole?.avatar || '👮'}
+        {/* Active Officer Identity Badge: Navigates to Access Control */}
+        <button
+          onClick={onNavigateToAccess}
+          title="Active Session Identity — Open Access Control"
+          className="flex items-center space-x-2 bg-slate-50 hover:bg-slate-100/80 border border-slate-200 px-2.5 py-1 rounded-lg transition-colors text-left"
+        >
+          <div className="w-6 h-6 rounded-md bg-white border border-slate-200 flex items-center justify-center text-slate-700 shrink-0">
+            <RoleIcon role={currentRole} className="w-3.5 h-3.5 text-slate-700" />
           </div>
-          <div className="text-left">
+          <div className="text-left hidden sm:block">
             <div className="text-xs font-semibold text-slate-900 leading-none truncate max-w-[130px]">
               {displayName}
             </div>
@@ -94,19 +102,7 @@ export default function TopHeader({
               {displayClearance}
             </div>
           </div>
-        </div>
-
-        {/* Sign Out Action */}
-        {onLogout && (
-          <button
-            onClick={onLogout}
-            title="Sign out of active session"
-            className="flex items-center space-x-1.5 text-slate-600 hover:text-red-700 hover:bg-red-50 border border-slate-200 hover:border-red-200 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors"
-          >
-            <LogOut className="w-3.5 h-3.5 text-slate-500 group-hover:text-red-600" />
-            <span className="hidden sm:inline">Sign Out</span>
-          </button>
-        )}
+        </button>
 
       </div>
     </header>

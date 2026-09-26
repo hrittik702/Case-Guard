@@ -4,7 +4,7 @@ export const ROLES = {
     name: 'Investigation Officer',
     designation: 'Investigation Officer',
     clearance: 'Secret',
-    avatar: '👮',
+    iconName: 'Shield',
     permissions: ['view', 'upload', 'download', 'verify', 'create_case', 'create_version']
   },
   POLICE_OFFICER: {
@@ -12,7 +12,7 @@ export const ROLES = {
     name: 'Police Station Officer',
     designation: 'Station House Officer / SI',
     clearance: 'Secret',
-    avatar: '🚔',
+    iconName: 'Building2',
     permissions: ['view', 'upload', 'download', 'verify']
   },
   LEGAL_OFFICER: {
@@ -20,7 +20,7 @@ export const ROLES = {
     name: 'Legal Officer',
     designation: 'Legal Officer / Prosecutor',
     clearance: 'Confidential',
-    avatar: '⚖️',
+    iconName: 'Scale',
     permissions: ['view', 'download', 'verify', 'edit_metadata']
   },
   FORENSIC_ANALYST: {
@@ -28,7 +28,7 @@ export const ROLES = {
     name: 'Forensic Analyst',
     designation: 'Forensic Analyst',
     clearance: 'Top Secret',
-    avatar: '🔬',
+    iconName: 'Microscope',
     permissions: ['view', 'upload', 'download', 'verify', 'forensic_analysis']
   },
   ADMINISTRATOR: {
@@ -36,7 +36,7 @@ export const ROLES = {
     name: 'System Administrator',
     designation: 'System Administrator & Auditor',
     clearance: 'Top Secret',
-    avatar: '🛡️',
+    iconName: 'ShieldCheck',
     permissions: ['view', 'upload', 'download', 'edit_metadata', 'delete', 'verify', 'manage_access']
   }
 };

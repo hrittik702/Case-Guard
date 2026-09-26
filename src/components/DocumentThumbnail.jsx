@@ -150,8 +150,8 @@ export default function DocumentThumbnail({ doc }) {
             <Presentation className="w-3 h-3 text-orange-600" />
           </div>
           <div className="flex items-center gap-1.5 my-auto">
-            <div className="w-7 h-7 bg-orange-50 rounded border border-orange-100 flex items-center justify-center text-[8px] text-orange-600 font-semibold">
-              📊
+            <div className="w-7 h-7 bg-orange-50 rounded border border-orange-100 flex items-center justify-center text-orange-600">
+              <Presentation className="w-3.5 h-3.5" />
             </div>
             <div className="space-y-1 flex-1">
               <div className="h-1 bg-slate-200 rounded w-full"></div>

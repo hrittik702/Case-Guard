@@ -267,13 +267,13 @@ export default function IntegrityVerificationView({
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse text-xs">
             <thead>
-              <tr className="bg-slate-50/80 border-b border-slate-200 text-slate-600 font-semibold select-none">
-                <th className="py-3 px-4">Document</th>
-                <th className="py-3 px-4">Case</th>
-                <th className="py-3 px-3">Version</th>
-                <th className="py-3 px-4">Integrity</th>
-                <th className="py-3 px-4">Last Verified</th>
-                <th className="py-3 px-4 text-right">Action</th>
+              <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 font-mono text-[11px] uppercase tracking-wider font-semibold select-none">
+                <th className="py-2.5 px-4">Document</th>
+                <th className="py-2.5 px-4">Case</th>
+                <th className="py-2.5 px-3">Version</th>
+                <th className="py-2.5 px-4">Integrity</th>
+                <th className="py-2.5 px-4">Last Verified</th>
+                <th className="py-2.5 px-4 text-right">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-slate-700">
@@ -461,7 +461,12 @@ export default function IntegrityVerificationView({
           />
 
           {/* Drawer content */}
-          <div className="relative w-full max-w-lg bg-white border-l border-slate-200 shadow-xl flex flex-col h-full z-10 animate-in slide-in-from-right duration-200">
+          <div 
+            className="relative w-full sm:w-[440px] bg-white border-l border-slate-200 shadow-xl flex flex-col h-full z-10 animate-in slide-in-from-right duration-200"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Document Integrity Details"
+          >
             {/* Drawer Header */}
             <div className="px-5 py-4 border-b border-slate-200 flex items-start justify-between bg-slate-50/50">
               <div className="space-y-1 pr-4">
@@ -481,6 +486,7 @@ export default function IntegrityVerificationView({
                 type="button"
                 onClick={() => setSelectedDocId(null)}
                 className="text-slate-400 hover:text-slate-700 p-1.5 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
+                aria-label="Close dialog"
                 title="Close Inspector (Esc)"
               >
                 <X className="w-4 h-4" />
@@ -664,7 +670,7 @@ export default function IntegrityVerificationView({
                 )}
               </div>
 
-              {/* Developer & Demonstration Controls (Collapsible) */}
+              {/* Integrity & Tamper Testing Controls (Collapsible) */}
               <div className="border border-slate-200 rounded-xl overflow-hidden bg-slate-50/50">
                 <button
                   type="button"
@@ -672,7 +678,7 @@ export default function IntegrityVerificationView({
                   className="w-full px-3.5 py-2.5 flex items-center justify-between text-slate-600 hover:text-slate-900 text-xs font-semibold cursor-pointer"
                 >
                   <span className="flex items-center gap-1.5">
-                    <span>Developer & Demonstration Controls</span>
+                    <span>Integrity & Tamper Testing Controls</span>
                   </span>
                   {showDevControls ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
                 </button>
@@ -690,7 +696,7 @@ export default function IntegrityVerificationView({
                           className="px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 rounded-lg text-xs font-medium cursor-pointer transition-colors flex items-center gap-1.5"
                         >
                           <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />
-                          <span>Simulate Byte Tamper</span>
+                          <span>Test Tamper Detection</span>
                         </button>
                       ) : (
                         <button

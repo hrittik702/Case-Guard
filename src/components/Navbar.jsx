@@ -113,8 +113,7 @@ export default function Navbar({ activeTab, setActiveTab, currentRole, setCurren
 
             {/* Role Switcher Dropdown */}
             <div className="flex items-center space-x-2 bg-slate-800/90 border border-slate-700 rounded-lg p-1.5">
-              <span className="text-xl pl-1">{currentRole.avatar}</span>
-              <div className="hidden sm:block text-left pr-1">
+              <div className="hidden sm:block text-left pr-1 pl-1">
                 <div className="text-xs font-semibold leading-tight text-white flex items-center gap-1.5">
                   <span>{currentRole.name}</span>
                   <span className={`text-[10px] px-1 py-0.2 rounded font-mono uppercase ${
@@ -141,7 +140,7 @@ export default function Navbar({ activeTab, setActiveTab, currentRole, setCurren
               >
                 {rolesList.map(r => (
                   <option key={r.id} value={r.id}>
-                    {r.avatar} {r.name} ({r.designation.split(',')[0]})
+                    {r.name} ({r.designation.split(',')[0]})
                   </option>
                 ))}
               </select>
