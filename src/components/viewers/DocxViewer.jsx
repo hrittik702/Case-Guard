@@ -66,12 +66,12 @@ export default function DocxViewer({ blob, filename, onDownload }) {
       {error && !loading && (
         <div className="m-auto text-center p-6 bg-white border border-red-200 rounded-xl max-w-sm space-y-2">
           <AlertCircle className="w-8 h-8 text-red-500 mx-auto" />
-          <div className="font-bold text-slate-800 text-xs">DOCX Preview Unavailable</div>
-          <p className="text-[11px] text-slate-500">{error}</p>
+          <div className="font-semibold text-slate-800 text-xs">DOCX Preview Unavailable</div>
+          <p className="text-xs text-slate-500 font-normal">{error}</p>
           {onDownload && (
             <button
               onClick={onDownload}
-              className="mt-2 inline-flex items-center space-x-1 bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-semibold"
+              className="mt-2 inline-flex items-center space-x-1 bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium"
             >
               <Download className="w-3.5 h-3.5" />
               <span>Download Original Document</span>

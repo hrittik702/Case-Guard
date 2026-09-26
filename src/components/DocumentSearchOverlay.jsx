@@ -57,7 +57,7 @@ export default function DocumentSearchOverlay({
             placeholder="Search filename, case ID, type, or OCR text..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            className="flex-1 text-sm text-slate-900 placeholder-slate-400 bg-transparent focus:outline-none"
+            className="flex-1 text-sm font-normal text-slate-900 placeholder-slate-400 bg-transparent focus:outline-none"
           />
           {query && (
             <button
@@ -75,11 +75,11 @@ export default function DocumentSearchOverlay({
         {/* Results List */}
         <div className="overflow-y-auto divide-y divide-slate-100 flex-1 p-2">
           {!cleanQ ? (
-            <div className="py-10 text-center text-slate-400 text-xs">
+            <div className="py-10 text-center text-slate-400 text-xs font-normal">
               Type filename, case docket, classification, or evidentiary keywords to search.
             </div>
           ) : matchingDocs.length === 0 ? (
-            <div className="py-10 text-center text-slate-400 text-xs">
+            <div className="py-10 text-center text-slate-400 text-xs font-normal">
               No accessible documents match "{query}".
             </div>
           ) : (
@@ -102,14 +102,14 @@ export default function DocumentSearchOverlay({
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center space-x-2">
-                        <span className="font-bold text-xs text-slate-900 group-hover:text-blue-600 transition-colors truncate">
+                        <span className="font-semibold text-xs text-slate-900 group-hover:text-blue-600 transition-colors truncate">
                           {doc.name}
                         </span>
-                        <span className="font-mono text-[10px] text-blue-700 bg-blue-50 border border-blue-200 px-1.5 rounded">
+                        <span className="font-mono text-xs font-medium text-blue-700 bg-blue-50 border border-blue-200 px-1.5 rounded">
                           #{doc.caseId}
                         </span>
                       </div>
-                      <div className="flex items-center space-x-2 text-[11px] text-slate-500 mt-0.5">
+                      <div className="flex items-center space-x-2 text-xs text-slate-500 font-normal mt-0.5">
                         <span>{doc.type || fileInfo.label}</span>
                         <span>•</span>
                         <span>{doc.classification || 'Confidential'}</span>
@@ -131,7 +131,7 @@ export default function DocumentSearchOverlay({
         </div>
 
         {/* Footer */}
-        <div className="px-4 py-2 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
+        <div className="px-4 py-2 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-xs text-slate-400 font-normal">
           <span>{matchingDocs.length} result{matchingDocs.length === 1 ? '' : 's'}</span>
           <span>Press ESC to exit</span>
         </div>

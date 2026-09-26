@@ -150,7 +150,7 @@ export default function VideoViewer({ blob, filename, mimeType, onDownload }) {
     return (
       <div className="flex flex-col items-center justify-center p-12 text-slate-400">
         <Film className="w-10 h-10 text-slate-400 mb-2 stroke-1" />
-        <span className="text-xs font-semibold">No video media provided</span>
+        <span className="text-xs font-medium">No video media provided</span>
       </div>
     );
   }
@@ -163,7 +163,7 @@ export default function VideoViewer({ blob, filename, mimeType, onDownload }) {
         {/* Floating Resolution Badge if available */}
         {metadata?.width && metadata?.height && (
           <div className="absolute top-2.5 right-2.5 z-10 pointer-events-none opacity-80 group-hover:opacity-100 transition-opacity">
-            <span className="font-mono text-[10px] bg-slate-900/80 backdrop-blur text-purple-300 border border-purple-500/30 px-2 py-0.5 rounded shadow">
+            <span className="font-mono text-xs font-medium bg-slate-900/80 backdrop-blur text-purple-300 border border-purple-500/30 px-2 py-0.5 rounded shadow">
               {metadata.width}×{metadata.height} ({metadata.height >= 1080 ? 'FHD' : metadata.height >= 720 ? 'HD' : 'SD'})
             </span>
           </div>
@@ -173,14 +173,14 @@ export default function VideoViewer({ blob, filename, mimeType, onDownload }) {
           <div className="m-auto text-center p-6 bg-slate-900 border border-red-500/40 rounded-2xl max-w-md space-y-3 shadow-2xl">
             <AlertCircle className="w-10 h-10 text-red-400 mx-auto" />
             <div className="space-y-1">
-              <h4 className="font-bold text-white text-sm">Video Playback Issue</h4>
-              <p className="text-xs text-slate-400 leading-relaxed">{error}</p>
+              <h4 className="font-semibold text-white text-sm">Video Playback Issue</h4>
+              <p className="text-xs text-slate-400 leading-relaxed font-normal">{error}</p>
             </div>
 
             <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
               <button
                 onClick={retryPlayback}
-                className="inline-flex items-center space-x-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors"
+                className="inline-flex items-center space-x-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
               >
                 <RefreshCw className="w-3.5 h-3.5" />
                 <span>Retry Playback</span>
@@ -189,7 +189,7 @@ export default function VideoViewer({ blob, filename, mimeType, onDownload }) {
               {onDownload && (
                 <button
                   onClick={onDownload}
-                  className="inline-flex items-center space-x-1.5 bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors shadow-sm"
+                  className="inline-flex items-center space-x-1.5 bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition-colors shadow-sm"
                 >
                   <Download className="w-3.5 h-3.5" />
                   <span>Download Video Evidence</span>
@@ -247,7 +247,7 @@ export default function VideoViewer({ blob, filename, mimeType, onDownload }) {
               <RotateCw className="w-3.5 h-3.5" />
             </button>
 
-            <div className="font-mono text-[11px] text-slate-300 ml-1">
+            <div className="font-mono text-xs font-medium text-slate-300 ml-1">
               <span>{formatTime(currentTime)}</span>
               <span className="text-slate-500 mx-1">/</span>
               <span className="text-slate-500">{formatTime(duration)}</span>
@@ -257,13 +257,13 @@ export default function VideoViewer({ blob, filename, mimeType, onDownload }) {
           {/* Right: Forensic Speed Selection, Mute, PIP, Fullscreen, Download */}
           <div className="flex items-center space-x-2">
             {/* Speed Multiplier Chips for Forensic Scrutiny */}
-            <div className="hidden sm:flex items-center space-x-1 bg-slate-800/80 p-0.5 rounded-lg border border-slate-700/60 text-[10px]">
+            <div className="hidden sm:flex items-center space-x-1 bg-slate-800/80 p-0.5 rounded-lg border border-slate-700/60 text-xs">
               <Gauge className="w-3 h-3 text-slate-400 ml-1 mr-0.5" />
               {[0.5, 1, 1.5, 2].map(rate => (
                 <button
                   key={rate}
                   onClick={() => changePlaybackRate(rate)}
-                  className={`px-1.5 py-0.5 rounded font-mono font-semibold transition-colors ${
+                  className={`px-1.5 py-0.5 rounded font-mono text-xs font-medium transition-colors ${
                     playbackRate === rate
                       ? 'bg-blue-600 text-white'
                       : 'text-slate-400 hover:text-white'

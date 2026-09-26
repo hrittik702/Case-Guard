@@ -271,13 +271,13 @@ export default function PdfViewer({ blob, filename, onDownload }) {
                 error={
                   <div className="m-auto text-center p-6 bg-white border border-slate-200 rounded-xl max-w-sm space-y-3 shadow-sm">
                     <AlertCircle className="w-8 h-8 text-amber-500 mx-auto" />
-                    <div className="font-bold text-slate-800 text-xs">Switching to Native PDF Viewer</div>
-                    <p className="text-[11px] text-slate-500">
+                    <div className="font-semibold text-slate-800 text-xs">Switching to Native PDF Viewer</div>
+                    <p className="text-xs text-slate-500 font-normal">
                       The canvas renderer encountered a worker policy restriction. Click below to view via the native engine.
                     </p>
                     <button
                       onClick={() => setUseNativeFallback(true)}
-                      className="inline-flex items-center space-x-1.5 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer"
+                      className="inline-flex items-center space-x-1.5 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg text-xs font-medium cursor-pointer"
                     >
                       <span>Activate Native Viewer</span>
                     </button>
@@ -364,7 +364,7 @@ export default function PdfViewer({ blob, filename, onDownload }) {
         <div className="bg-white/95 backdrop-blur-xs border border-slate-200/90 shadow-md rounded-xl px-3 py-1.5 flex items-center space-x-2 text-xs text-slate-700 select-none">
           
           {/* Subtle Page Indicator */}
-          <span className="font-mono text-[11px] text-slate-800 font-semibold px-1">
+          <span className="font-mono text-xs text-slate-800 font-medium px-1">
             {pageNumber} / {numPages || '...'}
           </span>
 
@@ -386,7 +386,7 @@ export default function PdfViewer({ blob, filename, onDownload }) {
               <button
                 type="button"
                 onClick={resetZoom}
-                className="px-1.5 py-0.5 font-mono text-[11px] rounded-md hover:bg-slate-100 text-slate-700 font-semibold cursor-pointer transition-colors"
+                className="px-1.5 py-0.5 text-xs rounded-md hover:bg-slate-100 text-slate-700 font-medium cursor-pointer transition-colors"
                 title="Reset to Fit Width"
               >
                 Fit
@@ -410,7 +410,7 @@ export default function PdfViewer({ blob, filename, onDownload }) {
           <button
             type="button"
             onClick={() => setUseNativeFallback(prev => !prev)}
-            className="p-1 rounded-md hover:bg-slate-100 text-slate-600 hover:text-slate-900 text-[11px] flex items-center gap-1 font-medium cursor-pointer transition-colors"
+            className="p-1 rounded-md hover:bg-slate-100 text-slate-600 hover:text-slate-900 text-xs flex items-center gap-1 font-medium cursor-pointer transition-colors"
             title={useNativeFallback ? "Switch to Canvas Viewer" : "Switch to Browser Native PDF Engine"}
           >
             <Layers className="w-3.5 h-3.5 text-slate-500" />

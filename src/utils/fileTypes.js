@@ -189,3 +189,78 @@ export function getFileInfo(mimeType = '', filename = '') {
     isLegacy: isLegacyOffice
   };
 }
+
+/**
+ * Accurately detects and preserves MIME types for uploaded files,
+ * especially ensuring images carry their native browser-renderable MIME type.
+ */
+export function detectMimeType(fileBlob, filename = '') {
+  let mime = (fileBlob?.type || '').toLowerCase().trim();
+  const ext = getFileExtension(filename || fileBlob?.name || '');
+
+  const extMap = {
+    // Images
+    jpg: 'image/jpeg',
+    jpeg: 'image/jpeg',
+    png: 'image/png',
+    webp: 'image/webp',
+    gif: 'image/gif',
+    svg: 'image/svg+xml',
+    bmp: 'image/bmp',
+    ico: 'image/x-icon',
+    tiff: 'image/tiff',
+    tif: 'image/tiff',
+    // Documents
+    pdf: 'application/pdf',
+    docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    pptx: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+    txt: 'text/plain',
+    csv: 'text/csv',
+    tsv: 'text/tab-separated-values',
+    json: 'application/json',
+    xml: 'application/xml',
+    mp4: 'video/mp4',
+    webm: 'video/webm',
+    mp3: 'audio/mpeg',
+    wav: 'audio/wav',
+    zip: 'application/zip'
+  };
+
+  if (!mime || mime === 'application/octet-stream' || (mime.startsWith('text/') && extMap[ext]?.startsWith('image/'))) {
+    if (extMap[ext]) {
+      return extMap[ext];
+    }
+  }
+
+  return mime || 'application/octet-stream';
+}
+
+/**
+ * Ensures an image or binary source is a valid renderable Blob with the correct MIME type.
+ * Handles Blobs, Files, ArrayBuffers, and Uint8Arrays without unnecessary conversions.
+ */
+export function ensureRenderableBlob(blob, filename = '') {
+  if (!blob) return null;
+  if (typeof blob === 'string') return blob;
+
+  const targetMime = detectMimeType(blob, filename);
+
+  // If ArrayBuffer or TypedArray view
+  if (blob instanceof ArrayBuffer || ArrayBuffer.isView(blob)) {
+    return new Blob([blob], { type: targetMime });
+  }
+
+  // If Blob or File
+  if (blob instanceof Blob) {
+    const ext = getFileExtension(filename || blob.name || '');
+    // If blob type is missing or generic octet-stream, or for SVG if not image/svg+xml
+    if (!blob.type || blob.type === 'application/octet-stream' || (ext === 'svg' && blob.type !== 'image/svg+xml')) {
+      return new Blob([blob], { type: targetMime });
+    }
+    return blob;
+  }
+
+  return null;
+}
+

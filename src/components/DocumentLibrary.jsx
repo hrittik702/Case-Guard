@@ -295,7 +295,7 @@ export default function DocumentLibrary({
       {/* 1. Header Structure */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200">
         <div>
-          <h1 className="text-xl font-bold tracking-tight text-slate-900">
+          <h1 className="text-2xl font-semibold tracking-tight text-slate-900">
             Document Vault
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
@@ -314,7 +314,7 @@ export default function DocumentLibrary({
           >
             <Search className="w-3.5 h-3.5 text-slate-500" />
             <span className="hidden sm:inline">Search</span>
-            <kbd className="hidden md:inline-block px-1.5 py-0.2 text-[9px] font-mono text-slate-500 bg-white border border-slate-300 rounded">
+            <kbd className="hidden md:inline-block px-1.5 py-0.5 text-[10px] font-mono text-slate-500 bg-white border border-slate-300 rounded font-normal">
               ⌘K
             </kbd>
           </button>
@@ -480,14 +480,14 @@ export default function DocumentLibrary({
           </div>
           
           <div className="space-y-1">
-            <h3 className="text-sm font-bold text-slate-800">
+            <h3 className="text-lg font-semibold text-slate-800">
               {accessibleDocuments.length === 0 
                 ? 'No Documents in Vault'
                 : searchQuery.trim() 
                   ? 'No documents match your search'
                   : 'No documents match the selected filters'}
             </h3>
-            <p className="text-xs text-slate-500 max-w-sm mx-auto">
+            <p className="text-sm text-slate-500 max-w-sm mx-auto font-normal">
               {accessibleDocuments.length === 0
                 ? 'Upload a document to begin building the case evidence repository.'
                 : searchQuery.trim()

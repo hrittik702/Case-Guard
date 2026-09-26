@@ -72,14 +72,14 @@ export default function SidebarNav({
               </div>
               <div>
                 <div className="flex items-center space-x-1.5">
-                  <span className="font-bold text-base tracking-tight text-slate-900 font-mono">
+                  <span className="font-semibold text-base tracking-tight text-slate-900 font-mono">
                     CASEGUARD
                   </span>
-                  <span className="text-[10px] font-semibold bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded border border-blue-200">
+                  <span className="text-[10px] font-medium bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded border border-blue-200">
                     DMS
                   </span>
                 </div>
-                <div className="text-[11px] text-slate-500 font-medium leading-none mt-0.5">
+                <div className="text-xs text-slate-500 font-normal leading-none mt-0.5">
                   Secure Legal & Case Vault
                 </div>
               </div>
@@ -104,7 +104,7 @@ export default function SidebarNav({
                 <button
                   key={item.id}
                   onClick={() => handleNavClick(item.id)}
-                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-semibold transition-colors ${
+                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-medium transition-colors ${
                     isActive
                       ? 'bg-slate-900 text-white shadow-xs'
                       : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
@@ -116,7 +116,7 @@ export default function SidebarNav({
                   </div>
 
                   {item.badge && (
-                    <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${
+                    <span className={`text-[11px] px-1.5 py-0.5 rounded font-medium ${
                       item.alert
                         ? 'bg-red-50 text-red-700 border border-red-200 animate-pulse'
                         : isActive
@@ -134,7 +134,7 @@ export default function SidebarNav({
 
         {/* Bottom User & Role Section */}
         <div className="p-4 border-t border-slate-200 bg-slate-50/70">
-          <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">
+          <div className="text-[11px] font-medium uppercase tracking-wider text-slate-500 mb-2">
             Active Session (RBAC)
           </div>
 
@@ -142,18 +142,18 @@ export default function SidebarNav({
             <div className="flex items-center space-x-2.5 mb-2">
               <span className="text-xl">{activeAvatar}</span>
               <div className="min-w-0 flex-1">
-                <div className="text-xs font-bold text-slate-900 truncate">
+                <div className="text-xs font-semibold text-slate-900 truncate">
                   {activeName}
                 </div>
-                <div className="text-[11px] text-slate-500 truncate">
+                <div className="text-xs text-slate-500 truncate font-normal">
                   {activeDesignation}
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-[11px]">
-              <span className="text-slate-500">Clearance:</span>
-              <span className={`px-1.5 py-0.5 rounded font-mono font-bold text-[10px] uppercase border ${
+            <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-xs">
+              <span className="text-slate-500 font-normal">Clearance:</span>
+              <span className={`px-1.5 py-0.5 rounded font-mono font-medium text-[10px] uppercase border ${
                 activeClearance === 'Top Secret' ? 'bg-red-50 text-red-700 border-red-200' :
                 activeClearance === 'Secret' ? 'bg-amber-50 text-amber-700 border-amber-200' :
                 'bg-blue-50 text-blue-700 border-blue-200'
@@ -164,7 +164,7 @@ export default function SidebarNav({
 
             {/* Switch Active User / Persona Dropdown */}
             <div className="mt-2.5">
-              <label className="text-[10px] text-slate-500 block mb-1">Active Officer Persona:</label>
+              <label className="text-[11px] text-slate-500 font-medium block mb-1">Active Officer Persona:</label>
               <select
                 aria-label="Switch User Persona"
                 value={currentUser?.email || DEMO_USERS[0].email}

@@ -60,7 +60,7 @@ export default function DocumentThumbnail({ doc }) {
       <div className="w-full h-full bg-gradient-to-b from-slate-100 to-slate-200/80 p-3.5 flex items-center justify-center">
         <div className="w-24 h-32 bg-white rounded shadow-2xs border border-slate-200/90 p-2 flex flex-col justify-between group-hover:shadow-xs group-hover:-translate-y-0.5 transition-all">
           <div className="flex items-center justify-between border-b border-slate-100 pb-1">
-            <span className="text-[8px] font-bold text-red-600 bg-red-50 px-1 rounded border border-red-100 font-mono">
+            <span className="text-[8px] font-semibold text-red-600 bg-red-50 px-1 rounded border border-red-100 font-mono">
               PDF
             </span>
             <span className="text-[7px] text-slate-400 font-mono">
@@ -89,7 +89,7 @@ export default function DocumentThumbnail({ doc }) {
       <div className="w-full h-full bg-gradient-to-b from-emerald-50/50 to-emerald-100/50 p-3.5 flex items-center justify-center">
         <div className="w-24 h-32 bg-white rounded shadow-2xs border border-emerald-200/80 p-2 flex flex-col justify-between group-hover:shadow-xs group-hover:-translate-y-0.5 transition-all">
           <div className="flex items-center justify-between border-b border-emerald-100 pb-1">
-            <span className="text-[8px] font-bold text-emerald-700 bg-emerald-50 px-1 rounded border border-emerald-200 font-mono">
+            <span className="text-[8px] font-semibold text-emerald-700 bg-emerald-50 px-1 rounded border border-emerald-200 font-mono">
               SHEET
             </span>
             <FileSpreadsheet className="w-3 h-3 text-emerald-600" />
@@ -119,7 +119,7 @@ export default function DocumentThumbnail({ doc }) {
       <div className="w-full h-full bg-gradient-to-b from-blue-50/50 to-blue-100/50 p-3.5 flex items-center justify-center">
         <div className="w-24 h-32 bg-white rounded shadow-2xs border border-blue-200/80 p-2 flex flex-col justify-between group-hover:shadow-xs group-hover:-translate-y-0.5 transition-all">
           <div className="flex items-center justify-between border-b border-blue-100 pb-1">
-            <span className="text-[8px] font-bold text-blue-700 bg-blue-50 px-1 rounded border border-blue-200 font-mono">
+            <span className="text-[8px] font-semibold text-blue-700 bg-blue-50 px-1 rounded border border-blue-200 font-mono">
               DOCX
             </span>
             <FileText className="w-3 h-3 text-blue-600" />
@@ -144,13 +144,13 @@ export default function DocumentThumbnail({ doc }) {
       <div className="w-full h-full bg-gradient-to-b from-orange-50/50 to-orange-100/50 p-3.5 flex items-center justify-center">
         <div className="w-28 h-20 bg-white rounded shadow-2xs border border-orange-200/80 p-2 flex flex-col justify-between group-hover:shadow-xs group-hover:-translate-y-0.5 transition-all">
           <div className="flex items-center justify-between border-b border-orange-100 pb-0.5">
-            <span className="text-[8px] font-bold text-orange-700 bg-orange-50 px-1 rounded border border-orange-200 font-mono">
+            <span className="text-[8px] font-semibold text-orange-700 bg-orange-50 px-1 rounded border border-orange-200 font-mono">
               PPTX
             </span>
             <Presentation className="w-3 h-3 text-orange-600" />
           </div>
           <div className="flex items-center gap-1.5 my-auto">
-            <div className="w-7 h-7 bg-orange-50 rounded border border-orange-100 flex items-center justify-center text-[8px] text-orange-600 font-bold">
+            <div className="w-7 h-7 bg-orange-50 rounded border border-orange-100 flex items-center justify-center text-[8px] text-orange-600 font-semibold">
               📊
             </div>
             <div className="space-y-1 flex-1">
@@ -204,7 +204,7 @@ export default function DocumentThumbnail({ doc }) {
     <div className="w-full h-full bg-slate-100 p-3.5 flex items-center justify-center">
       <div className="w-24 h-32 bg-white rounded shadow-2xs border border-slate-200 p-2 flex flex-col justify-between group-hover:shadow-xs group-hover:-translate-y-0.5 transition-all">
         <div className="flex items-center justify-between border-b border-slate-100 pb-1">
-          <span className="text-[8px] font-bold text-slate-600 bg-slate-100 px-1 rounded font-mono">
+          <span className="text-[8px] font-semibold text-slate-600 bg-slate-100 px-1 rounded font-mono">
             FILE
           </span>
           <FileCode className="w-3 h-3 text-slate-500" />

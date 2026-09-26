@@ -105,7 +105,7 @@ export default function ArchiveViewer({ blob, filename, onDownload }) {
     return (
       <div className="flex flex-col items-center justify-center p-12 text-slate-400">
         <Loader2 className="w-8 h-8 animate-spin text-blue-500 mb-2" />
-        <span className="text-xs font-semibold">Reading ZIP archive contents...</span>
+        <span className="text-xs font-medium">Reading ZIP archive contents...</span>
       </div>
     );
   }
@@ -114,7 +114,7 @@ export default function ArchiveViewer({ blob, filename, onDownload }) {
     return (
       <div className="flex flex-col items-center justify-center p-12 text-center">
         <AlertCircle className="w-8 h-8 text-red-400 mb-2" />
-        <span className="text-xs font-semibold text-slate-700">{error}</span>
+        <span className="text-xs font-medium text-slate-700">{error}</span>
         {onDownload && (
           <button
             onClick={onDownload}
@@ -138,19 +138,19 @@ export default function ArchiveViewer({ blob, filename, onDownload }) {
             <FolderArchive className="w-6 h-6" />
           </div>
           <div>
-            <h3 className="font-semibold text-slate-900 text-xs truncate max-w-xs" title={filename}>
+            <h3 className="font-semibold text-slate-900 text-sm truncate max-w-xs" title={filename}>
               {filename || 'Archive Bundle'}
             </h3>
-            <div className="flex items-center space-x-3 text-[11px] text-slate-500 mt-0.5">
-              <span>{stats.files} {stats.files === 1 ? 'file' : 'files'}</span>
+            <div className="flex items-center space-x-3 text-xs text-slate-500 mt-0.5 font-normal">
+              <span><span className="font-mono text-xs">{stats.files}</span> {stats.files === 1 ? 'file' : 'files'}</span>
               <span>•</span>
-              <span>{stats.dirs} folders</span>
+              <span><span className="font-mono text-xs">{stats.dirs}</span> folders</span>
               <span>•</span>
-              <span>Archive: {formatBytes(blob?.size)}</span>
+              <span>Archive: <span className="font-mono text-xs">{formatBytes(blob?.size)}</span></span>
               {stats.totalUncompressed > 0 && (
                 <>
                   <span>•</span>
-                  <span>Extracted: ~{formatBytes(stats.totalUncompressed)}</span>
+                  <span>Extracted: ~<span className="font-mono text-xs">{formatBytes(stats.totalUncompressed)}</span></span>
                 </>
               )}
             </div>
@@ -177,18 +177,18 @@ export default function ArchiveViewer({ blob, filename, onDownload }) {
             placeholder="Search files inside archive..."
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
-            className="w-full pl-8 pr-3 py-1.5 bg-white border border-slate-300 rounded-lg text-slate-800 placeholder-slate-400 text-xs focus:outline-none focus:border-blue-500"
+            className="w-full pl-8 pr-3 py-1.5 bg-white border border-slate-300 rounded-lg text-slate-800 placeholder-slate-400 text-xs focus:outline-none focus:border-blue-500 font-sans"
           />
         </div>
-        <span className="text-[11px] text-slate-500 ml-3 shrink-0">
-          Showing {filteredEntries.length} of {entries.length} items
+        <span className="text-xs text-slate-500 ml-3 shrink-0 font-normal">
+          Showing <span className="font-mono text-xs">{filteredEntries.length}</span> of <span className="font-mono text-xs">{entries.length}</span> items
         </span>
       </div>
 
       {/* File List */}
-      <div className="flex-1 overflow-y-auto divide-y divide-slate-100 font-mono text-[11px] bg-white">
+      <div className="flex-1 overflow-y-auto divide-y divide-slate-100 font-mono text-xs bg-white">
         {filteredEntries.length === 0 ? (
-          <div className="p-8 text-center text-slate-400">
+          <div className="p-8 text-center text-slate-400 font-sans text-xs">
             No matching files found in this archive.
           </div>
         ) : (
@@ -203,18 +203,18 @@ export default function ArchiveViewer({ blob, filename, onDownload }) {
                 ) : (
                   <File className="w-4 h-4 text-slate-400 shrink-0" />
                 )}
-                <span className={`truncate ${entry.isDir ? 'text-amber-800 font-semibold' : 'text-slate-800'}`}>
+                <span className={`truncate ${entry.isDir ? 'text-amber-800 font-medium' : 'text-slate-800 font-normal'}`}>
                   {entry.name}
                 </span>
               </div>
 
-              <div className="flex items-center space-x-4 text-slate-500 shrink-0 text-[10px]">
+              <div className="flex items-center space-x-4 text-slate-500 shrink-0 text-xs">
                 {entry.date && (
-                  <span className="hidden sm:inline font-sans text-slate-400">
+                  <span className="hidden sm:inline font-sans text-slate-400 text-xs">
                     {new Date(entry.date).toLocaleDateString()}
                   </span>
                 )}
-                <span className="w-16 text-right font-mono">
+                <span className="w-16 text-right font-mono text-xs">
                   {entry.isDir ? 'DIR' : formatBytes(entry.uncompressedSize)}
                 </span>
               </div>

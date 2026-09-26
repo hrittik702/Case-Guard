@@ -38,18 +38,18 @@ export default function AccessControlView({
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <div className="flex items-center space-x-2">
-              <span className="text-[11px] font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200 px-2 py-0.5 rounded-full">
+              <span className="text-[11px] font-medium bg-indigo-50 text-indigo-700 border border-indigo-200 px-2 py-0.5 rounded-full">
                 Least Privilege & Multi-Tier Clearance
               </span>
-              <span className="text-xs text-slate-500">
+              <span className="text-xs font-normal text-slate-500">
                 Institutional Security Model
               </span>
             </div>
-            <h1 className="text-xl font-bold tracking-tight text-slate-900 mt-1 flex items-center gap-2">
+            <h1 className="text-2xl font-semibold tracking-tight text-slate-900 mt-1.5 flex items-center gap-2">
               <Lock className="w-5 h-5 text-indigo-600" />
               Access Control & Authorization Policies
             </h1>
-            <p className="text-xs text-slate-500 mt-0.5">
+            <p className="text-sm font-normal text-slate-500 mt-1 max-w-4xl">
               Role-Based (RBAC) and Attribute-Based (ABAC) access controls enforced at every document request boundary.
             </p>
           </div>
@@ -82,7 +82,7 @@ export default function AccessControlView({
             >
               <div className="flex items-start justify-between mb-2">
                 <span className="text-2xl">{r.avatar}</span>
-                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full border ${
                   r.clearance === 'Top Secret' ? 'bg-red-50 text-red-700 border-red-200' :
                   r.clearance === 'Secret' ? 'bg-amber-50 text-amber-700 border-amber-200' :
                   'bg-blue-50 text-blue-700 border-blue-200'
@@ -91,19 +91,19 @@ export default function AccessControlView({
                 </span>
               </div>
 
-              <h3 className="font-bold text-slate-900 text-xs truncate">
+              <h3 className="font-semibold text-slate-900 text-sm truncate">
                 {r.name}
               </h3>
-              <p className="text-[11px] text-slate-500 truncate mt-0.5">
+              <p className="text-xs font-normal text-slate-500 truncate mt-0.5">
                 {r.designation}
               </p>
-              <div className="text-[10px] font-mono text-slate-400 mt-2">
+              <div className="text-xs font-mono text-slate-400 mt-2">
                 Permissions: {r.permissions.length} granted
               </div>
 
-              <div className="mt-3 pt-2 border-t border-slate-100 flex items-center justify-between text-[11px]">
-                <span className="text-slate-400">Session:</span>
-                <span className={`font-semibold ${isActive ? 'text-blue-700' : 'text-slate-500'}`}>
+              <div className="mt-3 pt-2 border-t border-slate-100 flex items-center justify-between text-xs">
+                <span className="text-slate-400 font-normal">Session:</span>
+                <span className={`font-medium ${isActive ? 'text-blue-700' : 'text-slate-500'}`}>
                   {isActive ? '● Active Session' : 'Click to Switch'}
                 </span>
               </div>
@@ -115,10 +115,10 @@ export default function AccessControlView({
       {/* Master Permission Matrix Table */}
       <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-2xs">
         <div className="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between text-xs bg-slate-50/50">
-          <span className="font-bold text-slate-800 uppercase tracking-wider text-[11px]">
+          <span className="font-semibold text-slate-800 text-sm">
             Statutory Permission Matrix (Least Privilege)
           </span>
-          <span className="text-slate-500">
+          <span className="text-slate-500 text-xs font-normal">
             Enforced by Kernel Authorization Hook
           </span>
         </div>
@@ -126,7 +126,7 @@ export default function AccessControlView({
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs border-collapse">
             <thead>
-              <tr className="bg-slate-50 border-b border-slate-200 text-slate-600 font-semibold uppercase tracking-wider text-[11px]">
+              <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 font-medium uppercase tracking-wider text-[11px]">
                 <th className="py-2.5 px-4">Action / Resource Boundary</th>
                 <th className="py-2.5 px-3 text-center">Investigation Officer</th>
                 <th className="py-2.5 px-3 text-center">Legal Officer</th>
@@ -137,20 +137,20 @@ export default function AccessControlView({
             <tbody className="divide-y divide-slate-100">
               {permissionMatrix.map((row, idx) => (
                 <tr key={idx} className="hover:bg-slate-50/60 transition-colors">
-                  <td className="py-2.5 px-4 font-medium text-slate-900">
+                  <td className="py-2.5 px-4 font-normal text-slate-900 text-sm">
                     {row.permission}
                   </td>
                   <td className="py-2.5 px-3 text-center">
-                    {row.io ? <span className="text-emerald-600 font-bold">✓ ALLOW</span> : <span className="text-slate-300">✗ DENY</span>}
+                    {row.io ? <span className="text-emerald-600 font-semibold text-xs">✓ ALLOW</span> : <span className="text-slate-300 font-normal text-xs">✗ DENY</span>}
                   </td>
                   <td className="py-2.5 px-3 text-center">
-                    {row.legal ? <span className="text-emerald-600 font-bold">✓ ALLOW</span> : <span className="text-slate-300">✗ DENY</span>}
+                    {row.legal ? <span className="text-emerald-600 font-semibold text-xs">✓ ALLOW</span> : <span className="text-slate-300 font-normal text-xs">✗ DENY</span>}
                   </td>
                   <td className="py-2.5 px-3 text-center">
-                    {row.fsl ? <span className="text-emerald-600 font-bold">✓ ALLOW</span> : <span className="text-slate-300">✗ DENY</span>}
+                    {row.fsl ? <span className="text-emerald-600 font-semibold text-xs">✓ ALLOW</span> : <span className="text-slate-300 font-normal text-xs">✗ DENY</span>}
                   </td>
                   <td className="py-2.5 px-3 text-center">
-                    {row.admin ? <span className="text-emerald-600 font-bold">✓ ALLOW</span> : <span className="text-slate-300">✗ DENY</span>}
+                    {row.admin ? <span className="text-emerald-600 font-semibold text-xs">✓ ALLOW</span> : <span className="text-slate-300 font-normal text-xs">✗ DENY</span>}
                   </td>
                 </tr>
               ))}

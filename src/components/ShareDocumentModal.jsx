@@ -128,10 +128,10 @@ export default function ShareDocumentModal({
               <Share2 className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="text-sm font-bold text-white">
+              <h3 className="text-lg font-semibold text-white tracking-tight">
                 Controlled Document Access Delegation
               </h3>
-              <p className="text-[11px] text-slate-400">
+              <p className="text-xs text-slate-400 font-normal">
                 PoLP-Compliant Inter-Agency Evidence Sharing
               </p>
             </div>
@@ -148,12 +148,12 @@ export default function ShareDocumentModal({
         {/* Target Document Meta Summary */}
         <div className="bg-slate-50 px-6 py-3 border-b border-slate-200 flex items-center justify-between text-xs">
           <div>
-            <span className="font-mono text-blue-700 font-bold bg-blue-100/60 px-1.5 py-0.5 rounded mr-2">
+            <span className="font-mono text-xs font-medium text-blue-700 bg-blue-100/60 px-1.5 py-0.5 rounded mr-2">
               #{document.caseId || 'GENERAL'}
             </span>
-            <span className="font-semibold text-slate-900">{document.name}</span>
+            <span className="font-semibold text-sm text-slate-900">{document.name}</span>
           </div>
-          <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded border bg-amber-50 text-amber-700 border-amber-200">
+          <span className="text-[11px] font-medium px-2 py-0.5 rounded border bg-amber-50 text-amber-700 border-amber-200">
             {document.classification || 'Confidential'}
           </span>
         </div>
@@ -163,13 +163,13 @@ export default function ShareDocumentModal({
           
           {/* Recipient Selection */}
           <div>
-            <label className="block font-semibold text-slate-700 mb-1">
+            <label className="block text-xs font-medium text-slate-700 mb-1">
               Recipient Officer / Agency Personnel:
             </label>
             <select
               value={recipientEmail}
               onChange={(e) => setRecipientEmail(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500 font-medium"
+              className="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-sm font-normal text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
             >
               {candidateRecipients.map(u => (
                 <option key={u.id} value={u.email}>
@@ -177,7 +177,7 @@ export default function ShareDocumentModal({
                 </option>
               ))}
             </select>
-            <p className="text-[10px] text-slate-500 mt-1">
+            <p className="text-xs text-slate-500 font-normal mt-1">
               Select verified judicial prosecutor, investigating officer, or administrator.
             </p>
           </div>
@@ -185,13 +185,13 @@ export default function ShareDocumentModal({
           {/* Permission Level & Expiry */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block font-semibold text-slate-700 mb-1">
+              <label className="block text-xs font-medium text-slate-700 mb-1">
                 Permission Level:
               </label>
               <select
                 value={permission}
                 onChange={(e) => setPermission(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-sm font-normal text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
               >
                 <option value="VIEW">VIEW ONLY (In-Browser Viewer)</option>
                 <option value="DOWNLOAD">VIEW & DOWNLOAD (Section 65B Copy)</option>
@@ -199,13 +199,13 @@ export default function ShareDocumentModal({
             </div>
 
             <div>
-              <label className="block font-semibold text-slate-700 mb-1">
+              <label className="block text-xs font-medium text-slate-700 mb-1">
                 Delegation Validity:
               </label>
               <select
                 value={expiryHours}
                 onChange={(e) => setExpiryHours(Number(e.target.value))}
-                className="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-sm font-normal text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
               >
                 <option value={1}>1 Hour (Urgent Bail Review)</option>
                 <option value={24}>24 Hours (Court Submission)</option>
@@ -217,7 +217,7 @@ export default function ShareDocumentModal({
 
           {/* Official Purpose */}
           <div>
-            <label className="block font-semibold text-slate-700 mb-1">
+            <label className="block text-xs font-medium text-slate-700 mb-1">
               Statutory Purpose / Case Justification:
             </label>
             <input
@@ -225,7 +225,7 @@ export default function ShareDocumentModal({
               value={purpose}
               onChange={(e) => setPurpose(e.target.value)}
               placeholder="e.g. Trial preparation before Additional Sessions Judge, Saket"
-              className="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-sm font-normal text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
             />
           </div>
 
@@ -244,24 +244,24 @@ export default function ShareDocumentModal({
           {/* Active Shares List */}
           <div className="pt-3 border-t border-slate-200">
             <div className="flex items-center justify-between mb-2">
-              <span className="font-bold text-slate-800 text-[11px] uppercase tracking-wider">
+              <span className="font-semibold text-slate-700 text-xs uppercase tracking-wider">
                 Active Delegation Tokens ({activeShares.length})
               </span>
-              <span className="text-[10px] text-slate-500">Live Token Status</span>
+              <span className="text-xs text-slate-500 font-normal">Live Token Status</span>
             </div>
 
             {activeShares.length > 0 ? (
               <div className="space-y-2 max-h-40 overflow-y-auto pr-1">
                 {activeShares.map(s => (
-                  <div key={s.id} className="p-2.5 bg-slate-50 border border-slate-200 rounded-lg flex items-center justify-between text-[11px]">
+                  <div key={s.id} className="p-2.5 bg-slate-50 border border-slate-200 rounded-lg flex items-center justify-between text-xs">
                     <div>
-                      <div className="font-semibold text-slate-900 flex items-center gap-1.5">
+                      <div className="font-semibold text-slate-900 flex items-center gap-1.5 text-xs">
                         <span>{s.recipientName}</span>
-                        <span className="font-mono text-[9px] bg-blue-100 text-blue-800 px-1.5 py-0.2 rounded font-bold">
+                        <span className="font-mono text-[10px] bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded font-medium">
                           {s.permission}
                         </span>
                       </div>
-                      <div className="text-slate-500 text-[10px]">
+                      <div className="text-slate-500 text-xs font-normal mt-0.5">
                         Expires: {s.expiresAt ? new Date(s.expiresAt).toLocaleString() : 'Permanent'}
                       </div>
                     </div>
@@ -269,7 +269,7 @@ export default function ShareDocumentModal({
                     <button
                       type="button"
                       onClick={() => handleRevoke(s)}
-                      className="text-red-600 hover:text-red-800 p-1.5 rounded hover:bg-red-50 text-[10px] font-semibold flex items-center gap-1 transition-colors"
+                      className="text-red-600 hover:text-red-800 p-1.5 rounded hover:bg-red-50 text-xs font-medium flex items-center gap-1 transition-colors"
                       title="Revoke access immediately"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -279,7 +279,7 @@ export default function ShareDocumentModal({
                 ))}
               </div>
             ) : (
-              <p className="text-slate-400 text-[11px] italic">
+              <p className="text-slate-400 text-xs font-normal italic">
                 No active delegation tokens currently issued for this document.
               </p>
             )}
@@ -288,7 +288,7 @@ export default function ShareDocumentModal({
         </form>
 
         {/* Footer */}
-        <div className="px-6 py-3 border-t border-slate-100 bg-slate-50 flex items-center justify-between text-[11px] text-slate-500">
+        <div className="px-6 py-3 border-t border-slate-100 bg-slate-50 flex items-center justify-between text-xs text-slate-500 font-normal">
           <div className="flex items-center gap-1 text-slate-600">
             <Shield className="w-3.5 h-3.5 text-blue-600" />
             <span>Logged under Section 63 BSA Digital Evidence Standard</span>

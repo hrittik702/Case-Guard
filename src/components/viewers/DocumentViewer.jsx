@@ -57,14 +57,14 @@ class ViewerErrorBoundary extends Component {
           </div>
           <div className="space-y-1 max-w-sm">
             <h4 className="text-white font-semibold text-sm">Rendering Encountered an Issue</h4>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-slate-400 font-normal">
               The embedded viewer was unable to display this document. You can safely download the authentic binary file directly.
             </p>
           </div>
           <div className="flex items-center space-x-2">
             <button
               onClick={() => this.setState({ hasError: false, error: null })}
-              className="inline-flex items-center space-x-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-lg text-xs font-semibold cursor-pointer transition-colors"
+              className="inline-flex items-center space-x-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-lg text-xs font-medium cursor-pointer transition-colors"
             >
               <RotateCcw className="w-3.5 h-3.5" />
               <span>Retry Render</span>
@@ -72,7 +72,7 @@ class ViewerErrorBoundary extends Component {
             {this.props.onDownload && (
               <button
                 onClick={this.props.onDownload}
-                className="inline-flex items-center space-x-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold cursor-pointer transition-colors"
+                className="inline-flex items-center space-x-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-medium cursor-pointer transition-colors"
               >
                 <Download className="w-3.5 h-3.5" />
                 <span>Download File</span>
@@ -86,13 +86,13 @@ class ViewerErrorBoundary extends Component {
   }
 }
 
-export default function DocumentViewer({ document, blob, onDownload, onVerifyIntegrity }) {
+export default function DocumentViewer({ document, blob, loading = false, onDownload, onVerifyIntegrity }) {
   if (!document) {
     return (
       <div className="h-full flex flex-col items-center justify-center p-12 text-center text-slate-400">
         <FileText className="w-12 h-12 text-slate-300 mb-2 stroke-1" />
         <div className="font-semibold text-slate-700 text-sm">No Document Selected</div>
-        <p className="text-xs text-slate-500 mt-1">Select a document from the list to preview its contents.</p>
+        <p className="text-xs text-slate-500 mt-1 font-normal">Select a document from the list to preview its contents.</p>
       </div>
     );
   }
@@ -149,7 +149,7 @@ export default function DocumentViewer({ document, blob, onDownload, onVerifyInt
       {/* Main Specialized Viewer Body wrapped with ErrorBoundary */}
       <div className="flex-1 min-h-0 overflow-hidden relative flex flex-col">
         <ViewerErrorBoundary documentId={document.id} onDownload={handleDownload}>
-          {!blob ? (
+          {loading && !blob ? (
             <div className="h-full flex flex-col items-center justify-center p-8 text-slate-400">
               <Loader2 className="w-7 h-7 animate-spin text-blue-600 mb-2" />
               <span className="text-xs font-medium">Retrieving verified file binary from secure storage...</span>

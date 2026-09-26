@@ -70,7 +70,7 @@ export default function DocumentFilterPopover({
     >
       {/* Header */}
       <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-        <div className="flex items-center space-x-1.5 font-bold text-slate-900">
+        <div className="flex items-center space-x-1.5 font-semibold text-xs text-slate-900">
           <Filter className="w-3.5 h-3.5 text-blue-600" />
           <span>Filter Documents</span>
         </div>
@@ -85,13 +85,13 @@ export default function DocumentFilterPopover({
       <div className="py-3 space-y-3 max-h-[380px] overflow-y-auto">
         {/* Case Filter */}
         <div>
-          <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+          <label className="block text-xs font-medium text-slate-700 mb-1">
             Case Docket
           </label>
           <select
             value={filters.caseId || 'ALL'}
             onChange={(e) => onFilterChange('caseId', e.target.value)}
-            className="w-full bg-slate-50 border border-slate-200 rounded-md px-2.5 py-1.5 text-xs text-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="w-full bg-slate-50 border border-slate-200 rounded-md px-2.5 py-1.5 text-xs font-normal text-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500"
           >
             <option value="ALL">All Accessible Cases</option>
             {cases.map((c) => (
@@ -104,13 +104,13 @@ export default function DocumentFilterPopover({
 
         {/* Document Type Filter */}
         <div>
-          <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+          <label className="block text-xs font-medium text-slate-700 mb-1">
             Document Type
           </label>
           <select
             value={filters.docType || 'ALL'}
             onChange={(e) => onFilterChange('docType', e.target.value)}
-            className="w-full bg-slate-50 border border-slate-200 rounded-md px-2.5 py-1.5 text-xs text-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="w-full bg-slate-50 border border-slate-200 rounded-md px-2.5 py-1.5 text-xs font-normal text-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500"
           >
             <option value="ALL">All Types</option>
             {DOCUMENT_TYPES.filter(t => t !== 'All Types').map((t) => (
@@ -121,13 +121,13 @@ export default function DocumentFilterPopover({
 
         {/* Classification Filter */}
         <div>
-          <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+          <label className="block text-xs font-medium text-slate-700 mb-1">
             Security Classification
           </label>
           <select
             value={filters.classification || 'ALL'}
             onChange={(e) => onFilterChange('classification', e.target.value)}
-            className="w-full bg-slate-50 border border-slate-200 rounded-md px-2.5 py-1.5 text-xs text-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="w-full bg-slate-50 border border-slate-200 rounded-md px-2.5 py-1.5 text-xs font-normal text-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500"
           >
             <option value="ALL">All Classifications</option>
             {CLASSIFICATIONS.filter(c => c !== 'All Classifications').map((c) => (
@@ -138,7 +138,7 @@ export default function DocumentFilterPopover({
 
         {/* Integrity Status */}
         <div>
-          <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+          <label className="block text-xs font-medium text-slate-700 mb-1">
             Integrity Status
           </label>
           <div className="grid grid-cols-3 gap-1.5">
@@ -147,9 +147,9 @@ export default function DocumentFilterPopover({
                 key={st.id}
                 type="button"
                 onClick={() => onFilterChange('integrity', st.id)}
-                className={`py-1.5 px-2 rounded border text-center font-medium transition-colors ${
+                className={`py-1.5 px-2 rounded border text-center text-xs font-medium transition-colors ${
                   (filters.integrity || 'ALL') === st.id
-                    ? 'bg-blue-50 border-blue-300 text-blue-700 font-bold'
+                    ? 'bg-blue-50 border-blue-300 text-blue-700 font-semibold'
                     : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
                 }`}
               >
@@ -161,7 +161,7 @@ export default function DocumentFilterPopover({
 
         {/* Date Filter */}
         <div>
-          <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+          <label className="block text-xs font-medium text-slate-700 mb-1">
             Upload Date
           </label>
           <select

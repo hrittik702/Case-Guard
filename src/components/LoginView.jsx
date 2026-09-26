@@ -64,26 +64,26 @@ export default function LoginView({ onLoginSuccess }) {
             </div>
             <div>
               <div className="flex items-center space-x-2">
-                <span className="font-bold text-base tracking-tight font-mono text-slate-900">
+                <span className="font-semibold text-base tracking-tight font-mono text-slate-900">
                   CASEGUARD
                 </span>
-                <span className="text-[10px] font-semibold bg-blue-50 text-blue-700 px-2 py-0.5 rounded border border-blue-200">
+                <span className="text-[10px] font-medium bg-blue-50 text-blue-700 px-2 py-0.5 rounded border border-blue-200">
                   SECURE GOV PORTAL
                 </span>
               </div>
-              <p className="text-[11px] text-slate-500 font-medium">
+              <p className="text-xs text-slate-500 font-normal mt-0.5">
                 Judicial & Law Enforcement Evidence Vault (BSA Section 63 & BNSS 2023)
               </p>
             </div>
           </div>
 
           <div className="hidden md:flex items-center space-x-4 text-xs text-slate-500 font-medium">
-            <span className="flex items-center gap-1.5 bg-emerald-50 text-emerald-800 border border-emerald-200 px-2.5 py-1 rounded-full text-[11px]">
+            <span className="flex items-center gap-1.5 bg-emerald-50 text-emerald-800 border border-emerald-200 px-2.5 py-1 rounded-full text-[11px] font-medium">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
               Digital Integrity Protection Active
             </span>
             <span className="text-slate-300">|</span>
-            <span className="text-slate-600">Authorized Personnel Only</span>
+            <span className="text-slate-600 font-normal">Authorized Personnel Only</span>
           </div>
         </div>
       </header>
@@ -96,14 +96,14 @@ export default function LoginView({ onLoginSuccess }) {
           <div className="lg:col-span-6 bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 flex flex-col justify-between shadow-xs">
             <div>
               <div className="mb-6">
-                <div className="inline-flex items-center space-x-1.5 bg-blue-50 text-blue-700 border border-blue-200 px-2.5 py-0.5 rounded-full text-[11px] font-semibold mb-2">
+                <div className="inline-flex items-center space-x-1.5 bg-blue-50 text-blue-700 border border-blue-200 px-2.5 py-0.5 rounded-full text-xs font-medium mb-2">
                   <Lock className="w-3.5 h-3.5 text-blue-600" />
                   <span>Role-Based Authentication (PoLP)</span>
                 </div>
-                <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
+                <h1 className="text-2xl font-semibold text-slate-900 tracking-tight">
                   Officer Authentication
                 </h1>
-                <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                <p className="text-sm text-slate-500 mt-1 leading-relaxed font-normal">
                   Authenticate your institutional credentials to decrypt and access case evidence dossiers.
                 </p>
               </div>
@@ -113,14 +113,14 @@ export default function LoginView({ onLoginSuccess }) {
                   <ShieldAlert className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
                   <div>
                     <span className="font-semibold block">Authentication Failed</span>
-                    <span>{error}</span>
+                    <span className="font-normal">{error}</span>
                   </div>
                 </div>
               )}
 
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                  <label className="block text-xs font-medium text-slate-700 mb-1.5">
                     Official Email / Officer Badge ID
                   </label>
                   <div className="relative">
@@ -130,14 +130,14 @@ export default function LoginView({ onLoginSuccess }) {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="e.g. investigator@caseguard.gov"
-                      className="w-full bg-slate-50 border border-slate-300 rounded-xl pl-9 pr-3.5 py-2.5 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-600 focus:bg-white focus:ring-2 focus:ring-blue-100 transition-all font-mono font-medium"
+                      className="w-full bg-slate-50 border border-slate-300 rounded-xl pl-9 pr-3.5 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-600 focus:bg-white focus:ring-2 focus:ring-blue-100 transition-all font-mono font-medium"
                       required
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                  <label className="block text-xs font-medium text-slate-700 mb-1.5">
                     Security Passkey / Password
                   </label>
                   <div className="relative">
@@ -147,7 +147,7 @@ export default function LoginView({ onLoginSuccess }) {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="••••••••••••"
-                      className="w-full bg-slate-50 border border-slate-300 rounded-xl pl-9 pr-3.5 py-2.5 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-600 focus:bg-white focus:ring-2 focus:ring-blue-100 transition-all font-medium"
+                      className="w-full bg-slate-50 border border-slate-300 rounded-xl pl-9 pr-3.5 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-600 focus:bg-white focus:ring-2 focus:ring-blue-100 transition-all font-medium"
                       required
                     />
                   </div>
@@ -157,7 +157,7 @@ export default function LoginView({ onLoginSuccess }) {
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-4 rounded-xl text-xs transition-colors flex items-center justify-center space-x-2 shadow-xs disabled:opacity-50"
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-4 rounded-xl text-sm transition-colors flex items-center justify-center space-x-2 shadow-xs disabled:opacity-50"
                   >
                     <span>{isSubmitting ? 'Verifying Credentials...' : 'Sign In to Evidence Portal'}</span>
                     <ArrowRight className="w-4 h-4" />
@@ -166,12 +166,12 @@ export default function LoginView({ onLoginSuccess }) {
               </form>
             </div>
 
-            <div className="mt-8 pt-4 border-t border-slate-100 text-[11px] text-slate-500 space-y-1.5">
-              <div className="flex items-center gap-1.5 text-slate-700 font-semibold">
+            <div className="mt-8 pt-4 border-t border-slate-100 text-xs text-slate-500 space-y-1.5">
+              <div className="flex items-center gap-1.5 text-slate-700 font-medium">
                 <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
                 <span>Zero Trust Multi-Tenant Boundary Enforcement</span>
               </div>
-              <p className="text-slate-500 leading-relaxed text-[11px]">
+              <p className="text-slate-500 leading-relaxed text-xs font-normal">
                 Authentication events are recorded into the persistent Section 63 BSA audit ledger with officer badge ID and origin IP.
               </p>
             </div>
@@ -181,14 +181,14 @@ export default function LoginView({ onLoginSuccess }) {
           <div className="lg:col-span-6 flex flex-col justify-between space-y-4">
             <div>
               <div className="flex items-center justify-between mb-2">
-                <h2 className="text-xs font-bold uppercase tracking-wider text-slate-900 font-mono">
+                <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-900 font-mono">
                   Institutional Demo Profiles
                 </h2>
-                <span className="text-[10px] font-semibold bg-blue-50 text-blue-700 px-2 py-0.5 rounded border border-blue-200">
+                <span className="text-[10px] font-medium bg-blue-50 text-blue-700 px-2 py-0.5 rounded border border-blue-200">
                   Click to 1-Click Login
                 </span>
               </div>
-              <p className="text-xs text-slate-500 mb-3.5">
+              <p className="text-xs text-slate-500 mb-3.5 font-normal">
                 Select an officer persona below to automatically authenticate and evaluate role-based access control (RBAC):
               </p>
 
@@ -207,10 +207,10 @@ export default function LoginView({ onLoginSuccess }) {
                           </div>
                           <div>
                             <div className="flex items-center gap-2">
-                              <h3 className="text-xs font-bold text-slate-900 group-hover:text-blue-700 transition-colors">
+                              <h3 className="text-sm font-semibold text-slate-900 group-hover:text-blue-700 transition-colors">
                                 {u.name}
                               </h3>
-                              <span className={`text-[9px] px-1.5 py-0.2 rounded font-mono font-bold uppercase border ${
+                              <span className={`text-[10px] px-1.5 py-0.5 rounded font-mono font-medium uppercase border ${
                                 u.clearance === 'Top Secret' ? 'bg-red-50 text-red-700 border-red-200' :
                                 u.clearance === 'Secret' ? 'bg-amber-50 text-amber-700 border-amber-200' :
                                 'bg-blue-50 text-blue-700 border-blue-200'
@@ -218,10 +218,10 @@ export default function LoginView({ onLoginSuccess }) {
                                 {u.clearance}
                               </span>
                             </div>
-                            <p className="text-[11px] text-slate-600 font-medium mt-0.5">
+                            <p className="text-xs text-slate-600 font-normal mt-0.5">
                               {u.designation}
                             </p>
-                            <p className="text-[10px] text-slate-500 mt-1 line-clamp-1">
+                            <p className="text-[11px] text-slate-500 mt-1 line-clamp-1 font-normal">
                               {u.description}
                             </p>
                           </div>
@@ -229,15 +229,15 @@ export default function LoginView({ onLoginSuccess }) {
 
                         <button
                           type="button"
-                          className="shrink-0 text-[10px] font-semibold text-blue-700 group-hover:text-white bg-blue-50 group-hover:bg-blue-600 border border-blue-200 group-hover:border-blue-600 px-2.5 py-1 rounded-lg transition-colors"
+                          className="shrink-0 text-xs font-medium text-blue-700 group-hover:text-white bg-blue-50 group-hover:bg-blue-600 border border-blue-200 group-hover:border-blue-600 px-2.5 py-1 rounded-lg transition-colors"
                         >
                           Sign In
                         </button>
                       </div>
 
-                      <div className="mt-2.5 pt-2 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-500">
-                        <span className="font-mono text-slate-600">{u.email}</span>
-                        <span className="font-medium text-slate-600">
+                      <div className="mt-2.5 pt-2 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+                        <span className="font-mono text-xs font-medium text-slate-600">{u.email}</span>
+                        <span className="font-normal text-xs text-slate-600">
                           {u.assignedCases.includes('*') ? 'All Cases (Wildcard)' : `${u.assignedCases.length} Assigned ${u.assignedCases.length === 1 ? 'Case' : 'Cases'}`}
                         </span>
                       </div>
@@ -247,8 +247,8 @@ export default function LoginView({ onLoginSuccess }) {
               </div>
             </div>
 
-            <div className="bg-amber-50/80 border border-amber-200 rounded-xl p-3.5 text-[11px] text-amber-900 leading-relaxed shadow-2xs">
-              <span className="font-bold text-amber-950">PoLP Test Matrix:</span> Legal Officer (Advocate R. K. Shrivastava) cannot view Homicide Case INV-2026-0189 unless an investigator explicitly delegates access via the document sharing interface.
+            <div className="bg-amber-50/80 border border-amber-200 rounded-xl p-3.5 text-xs text-amber-900 leading-relaxed shadow-2xs font-normal">
+              <span className="font-semibold text-amber-950">PoLP Test Matrix:</span> Legal Officer (Advocate R. K. Shrivastava) cannot view Homicide Case INV-2026-0189 unless an investigator explicitly delegates access via the document sharing interface.
             </div>
           </div>
 
@@ -256,7 +256,7 @@ export default function LoginView({ onLoginSuccess }) {
       </main>
 
       {/* Institutional Footer */}
-      <footer className="border-t border-slate-200 bg-white py-3.5 px-6 text-center text-xs text-slate-500">
+      <footer className="border-t border-slate-200 bg-white py-3.5 px-6 text-center text-xs text-slate-500 font-normal">
         <p>
           CASEGUARD Digital Evidence Vault — Compliant with Section 63 BSA & Section 173 BNSS 2023 Digital Custody Standard.
         </p>

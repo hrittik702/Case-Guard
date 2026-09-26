@@ -782,10 +782,10 @@ export default function App() {
               <div className="space-y-5">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200">
                   <div>
-                    <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+                    <h1 className="text-2xl font-semibold tracking-tight text-slate-900 flex items-center gap-2">
                       <FolderGit2 className="w-5 h-5 text-blue-600" />
                       Cases
-                    </h2>
+                    </h1>
                     <p className="text-xs text-slate-500 mt-0.5">
                       Case-centric evidence repositories with verified document dossiers.
                     </p>
@@ -818,16 +818,16 @@ export default function App() {
                         >
                           <div>
                             <div className="flex items-center justify-between gap-2 mb-2">
-                              <span className="font-mono text-xs font-bold text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded">
+                              <span className="font-mono text-xs font-medium text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded">
                                 #{c.caseNumber}
                               </span>
                               <div className="flex items-center gap-1.5">
                                 {!hasCaseAccess && (
-                                  <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-amber-50 text-amber-700 border border-amber-200">
+                                  <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-amber-50 text-amber-700 border border-amber-200">
                                     Restricted
                                   </span>
                                 )}
-                                <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium border ${
+                                <span className={`text-xs px-2 py-0.5 rounded-full font-medium border ${
                                   c.priority === 'Critical' || c.priority === 'High' 
                                     ? 'bg-red-50 text-red-700 border-red-200' 
                                     : 'bg-slate-100 text-slate-700 border-slate-200'
@@ -836,18 +836,18 @@ export default function App() {
                                 </span>
                               </div>
                             </div>
-                            <h3 className="text-sm font-bold text-slate-900 mt-1">
+                            <h3 className="text-base font-semibold text-slate-900 mt-1">
                               {c.title}
                             </h3>
                             {c.description && (
-                              <p className="text-xs text-slate-500 mt-1 line-clamp-2">
+                              <p className="text-[13px] text-slate-500 mt-1 line-clamp-2 font-normal">
                                 {c.description}
                               </p>
                             )}
                           </div>
 
                           <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
-                            <span className="text-slate-600 font-medium">
+                            <span className="text-[13px] text-slate-600 font-normal">
                               {docCount} {docCount === 1 ? 'record' : 'records'}
                             </span>
                             <span className={`font-semibold flex items-center gap-1 ${hasCaseAccess ? 'text-blue-600' : 'text-slate-500'}`}>
@@ -862,8 +862,8 @@ export default function App() {
                 ) : (
                   <div className="text-center py-16 bg-white border border-slate-200 rounded-xl p-8 space-y-3">
                     <FolderGit2 className="w-12 h-12 text-slate-300 mx-auto stroke-1" />
-                    <h3 className="font-bold text-slate-800 text-sm">No Case Dossiers Created Yet</h3>
-                    <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                    <h3 className="text-lg font-semibold text-slate-800">No Case Dossiers Created Yet</h3>
+                    <p className="text-sm text-slate-500 max-w-sm mx-auto font-normal">
                       Create your first case dossier to associate and protect evidence files with cryptographic integrity.
                     </p>
                     <button
@@ -908,12 +908,12 @@ export default function App() {
                   <span className="text-[11px] font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200 px-2 py-0.5 rounded-full">
                     Cryptographic Integrity Health
                   </span>
-                  <span className="text-xs text-slate-500 font-mono">BSA Sec 63</span>
+                  <span className="text-xs text-slate-500 font-mono font-medium">BSA Sec 63</span>
                 </div>
-                <h2 className="text-xl font-bold text-slate-900 mt-1 flex items-center gap-2">
+                <h1 className="text-2xl font-semibold tracking-tight text-slate-900 mt-1 flex items-center gap-2">
                   <ShieldCheck className="w-5 h-5 text-emerald-600" />
                   Independent Document Verification Suite
-                </h2>
+                </h1>
                 <p className="text-xs text-slate-500 mt-0.5">
                   Inspect and mathematically verify any stored document against its anchored digital seal.
                 </p>
@@ -925,31 +925,33 @@ export default function App() {
                     <div key={doc.id} className="bg-white border border-slate-200 p-4 rounded-xl shadow-2xs space-y-3">
                       <div className="flex items-start justify-between gap-2">
                         <div>
-                          <span className="font-mono text-xs text-blue-700 font-bold bg-blue-50 px-1.5 py-0.2 rounded border border-blue-200">
+                          <span className="font-mono text-xs text-blue-700 font-medium bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200">
                             #{doc.caseId}
                           </span>
-                          <h3 className="text-sm font-bold text-slate-900 mt-1">{doc.name} ({doc.currentVersion})</h3>
+                          <h3 className="text-base font-semibold text-slate-900 mt-1">
+                            {doc.name} <span className="font-mono text-xs text-slate-500 font-normal">({doc.currentVersion})</span>
+                          </h3>
                         </div>
 
                         {doc.isTampered ? (
-                          <span className="text-[10px] font-bold text-red-700 bg-red-50 border border-red-200 px-2 py-0.5 rounded-full animate-pulse">
+                          <span className="text-xs font-medium text-red-700 bg-red-50 border border-red-200 px-2 py-0.5 rounded-full animate-pulse">
                             MISMATCH
                           </span>
                         ) : (
-                          <span className="text-[10px] font-medium text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
+                          <span className="text-xs font-medium text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
                             VERIFIED
                           </span>
                         )}
                       </div>
 
-                      <div className="p-2.5 bg-slate-50 rounded-lg border border-slate-200 font-mono text-[10px] text-slate-700 break-all select-all">
-                        <span className="text-slate-400 font-semibold block mb-0.5">Anchored Digital Fingerprint:</span>
+                      <div className="p-2.5 bg-slate-50 rounded-lg border border-slate-200 font-mono text-xs text-slate-700 break-all select-all font-normal">
+                        <span className="text-slate-400 font-medium block mb-0.5 font-sans text-xs">Anchored Digital Fingerprint:</span>
                         {doc.storedHash ? `${doc.storedHash.slice(0, 16)}••••••••••••••••${doc.storedHash.slice(-8)}` : 'N/A'}
                       </div>
 
                       {doc.isTampered && (
-                        <div className="p-2.5 bg-red-50 rounded-lg border border-red-200 font-mono text-[10px] text-red-700 break-all select-all">
-                          <span className="text-red-500 font-semibold block mb-0.5">Corrupted Payload Fingerprint:</span>
+                        <div className="p-2.5 bg-red-50 rounded-lg border border-red-200 font-mono text-xs text-red-700 break-all select-all font-normal">
+                          <span className="text-red-500 font-medium block mb-0.5 font-sans text-xs">Corrupted Payload Fingerprint:</span>
                           {doc.tamperedHash ? `${doc.tamperedHash.slice(0, 16)}••••••••••••••••${doc.tamperedHash.slice(-8)}` : 'Tampered'}
                         </div>
                       )}
@@ -987,8 +989,8 @@ export default function App() {
               ) : (
                 <div className="text-center py-16 bg-white border border-slate-200 rounded-xl p-8 space-y-3">
                   <ShieldCheck className="w-12 h-12 text-slate-300 mx-auto stroke-1" />
-                  <h3 className="font-bold text-slate-800 text-sm">No Documents to Verify</h3>
-                  <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                  <h3 className="text-lg font-semibold text-slate-800">No Documents to Verify</h3>
+                  <p className="text-sm text-slate-500 max-w-sm mx-auto font-normal">
                     Upload documents into a case dossier to inspect and recalculate real digital fingerprints.
                   </p>
                   <button
@@ -1011,6 +1013,8 @@ export default function App() {
               documents={documents}
               currentRole={currentRole}
               addToast={addToast}
+              onSelectCase={handleSelectCase}
+              onViewDocument={handleViewDocument}
             />
           )}
 
@@ -1043,10 +1047,10 @@ export default function App() {
         <footer className="border-t border-slate-200 bg-white py-4 px-6 text-xs text-slate-500">
           <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
             <div className="flex items-center space-x-2">
-              <span className="font-bold text-slate-700 font-mono">CASEGUARD</span>
+              <span className="font-semibold text-slate-700 font-mono text-xs">CASEGUARD</span>
               <span>— Evidence-Centric Document Lifecycle System</span>
             </div>
-            <span>Compliant with Bharatiya Sakshya Adhiniyam (BSA) Section 63 & BNSS 2023</span>
+            <span className="font-normal">Compliant with Bharatiya Sakshya Adhiniyam (BSA) Section 63 & BNSS 2023</span>
           </div>
         </footer>
 

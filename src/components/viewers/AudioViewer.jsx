@@ -25,7 +25,7 @@ export default function AudioViewer({ blob, filename, mimeType, onDownload }) {
     return (
       <div className="flex flex-col items-center justify-center p-12 text-slate-400">
         <AlertCircle className="w-8 h-8 text-slate-300 mb-2 stroke-1" />
-        <span className="text-xs font-semibold">No audio media provided</span>
+        <span className="text-xs font-medium">No audio media provided</span>
       </div>
     );
   }
@@ -44,18 +44,18 @@ export default function AudioViewer({ blob, filename, mimeType, onDownload }) {
 
         {/* Track Metadata */}
         <div className="text-center space-y-1">
-          <h3 className="font-semibold text-slate-900 text-sm truncate" title={filename}>
+          <h3 className="font-semibold text-slate-900 text-[15px] truncate" title={filename}>
             {filename || 'Audio Recording'}
           </h3>
-          <p className="text-xs text-slate-500 font-mono">
-            {mimeType || 'audio/mpeg'} • {(blob.size / 1024).toFixed(1)} KB
+          <p className="text-xs text-slate-500 font-normal">
+            <span className="font-mono text-xs">{mimeType || 'audio/mpeg'}</span> • <span className="font-mono text-xs">{(blob.size / 1024).toFixed(1)} KB</span>
           </p>
         </div>
 
         {/* Error Notification */}
         {error && (
           <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-center space-y-1">
-            <p className="text-xs text-red-600">{error}</p>
+            <p className="text-xs text-red-600 font-normal">{error}</p>
           </div>
         )}
 
@@ -76,7 +76,7 @@ export default function AudioViewer({ blob, filename, mimeType, onDownload }) {
           <div className="pt-2 border-t border-slate-100 flex justify-center">
             <button
               onClick={onDownload}
-              className="inline-flex items-center space-x-1.5 text-xs text-slate-600 hover:text-slate-900 transition-colors py-1 px-3 rounded-lg hover:bg-slate-100"
+              className="inline-flex items-center space-x-1.5 text-xs font-medium text-slate-600 hover:text-slate-900 transition-colors py-1 px-3 rounded-lg hover:bg-slate-100"
             >
               <Download className="w-3.5 h-3.5" />
               <span>Download Audio Evidence</span>

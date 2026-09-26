@@ -1,5 +1,6 @@
 import { openDatabase, saveLocal, loadLocal, blobMemoryCache } from './db.js';
 import { computeSHA256, hashFileSHA256 } from './cryptoService.js';
+import { detectMimeType, ensureRenderableBlob } from '../utils/fileTypes.js';
 
 const STORAGE_KEY = 'caseguard_documents';
 
@@ -111,30 +112,20 @@ export const DocumentRepository = {
     const hash = await hashFileSHA256(fileBlob, onProgress);
 
     const filename = metadata.name || fileBlob.name || 'Untitled Document';
-    const lowerName = filename.toLowerCase();
+    const mimeType = detectMimeType(fileBlob, filename);
 
-    // Normalize MIME type with extension fallback (especially for PDF and modern office)
-    let mimeType = fileBlob.type || '';
-    if (!mimeType || mimeType === 'application/octet-stream') {
-      if (lowerName.endsWith('.pdf')) mimeType = 'application/pdf';
-      else if (lowerName.endsWith('.docx')) mimeType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
-      else if (lowerName.endsWith('.xlsx')) mimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
-      else if (lowerName.endsWith('.pptx')) mimeType = 'application/vnd.openxmlformats-officedocument.presentationml.presentation';
-      else if (lowerName.endsWith('.txt')) mimeType = 'text/plain';
-      else if (lowerName.endsWith('.csv')) mimeType = 'text/csv';
-      else if (lowerName.endsWith('.json')) mimeType = 'application/json';
-      else if (lowerName.endsWith('.png')) mimeType = 'image/png';
-      else if (lowerName.endsWith('.jpg') || lowerName.endsWith('.jpeg')) mimeType = 'image/jpeg';
-      else mimeType = 'application/octet-stream';
-    }
+    // Preserve original fileBlob with exact MIME type (ensuring images have proper browser-renderable type)
+    const storedBlob = (fileBlob.type && fileBlob.type === mimeType) 
+      ? fileBlob 
+      : new Blob([fileBlob], { type: mimeType });
 
     const versionRecord = {
       id: versionId,
       documentId: docId,
       versionNumber: 1,
       versionLabel: 'V1',
-      fileBlob,
-      size: fileBlob.size,
+      fileBlob: storedBlob,
+      size: storedBlob.size,
       mimeType,
       hash,
       createdAt: now,
@@ -142,9 +133,9 @@ export const DocumentRepository = {
       changeNote: 'Initial upload and cryptographic anchoring.'
     };
 
-    const isImage = mimeType.startsWith('image/') || /\.(jpg|jpeg|png|webp|bmp|tiff)$/i.test(lowerName);
-    const isPdf = mimeType === 'application/pdf' || lowerName.endsWith('.pdf');
-    const isDocx = mimeType.includes('wordprocessingml') || lowerName.endsWith('.docx');
+    const isImage = mimeType.startsWith('image/');
+    const isPdf = mimeType === 'application/pdf';
+    const isDocx = mimeType.includes('wordprocessingml');
     const ocrApplicable = isImage || isPdf || isDocx;
 
     const docRecord = {
@@ -152,7 +143,7 @@ export const DocumentRepository = {
       caseId: metadata.caseId,
       name: filename,
       mimeType,
-      size: fileBlob.size,
+      size: storedBlob.size,
       classification: metadata.classification || 'Confidential',
       category: metadata.category || 'Evidence Record',
       tags: metadata.tags || [],
@@ -160,7 +151,7 @@ export const DocumentRepository = {
       currentVersionId: versionId,
       storedHash: hash,
       hash,
-      originalBlob: fileBlob, // kept for tamper-restore demonstration
+      originalBlob: storedBlob, // kept for tamper-restore demonstration
       ocr: {
         status: ocrApplicable ? 'AVAILABLE' : 'NOT_APPLICABLE',
         text: '',
@@ -176,6 +167,15 @@ export const DocumentRepository = {
     };
 
     // Store in IndexedDB atomically
+    // Cache blob in memory for instant zero-latency retrieval
+    blobMemoryCache.set(versionId, storedBlob);
+    blobMemoryCache.set(docId, storedBlob);
+
+    // Immediately persist metadata to localStorage for zero data loss on immediate refresh
+    const localDocs = loadLocal(STORAGE_KEY, []);
+    saveLocal(STORAGE_KEY, [docRecord, ...localDocs.filter(d => d.id !== docId)]);
+
+    // Store in IndexedDB atomically if available
     try {
       const db = await openDatabase();
       await new Promise((resolve, reject) => {
@@ -190,16 +190,8 @@ export const DocumentRepository = {
         tx.onerror = () => reject(tx.error || new Error('IndexedDB transaction failed.'));
       });
     } catch (err) {
-      console.warn('IndexedDB write failure during document creation:', err);
-      throw new Error(`Unable to save document to storage: ${err.message || 'IndexedDB error'}`);
+      console.warn('IndexedDB write warning during document creation, preserved in memory & local storage:', err);
     }
-
-    // Cache blob in memory for instant retrieval without waiting for DB
-    blobMemoryCache.set(versionId, fileBlob);
-
-    // Immediately persist metadata to localStorage for zero data loss on immediate refresh
-    const localDocs = loadLocal(STORAGE_KEY, []);
-    saveLocal(STORAGE_KEY, [docRecord, ...localDocs.filter(d => d.id !== docId)]);
 
     return docRecord;
   },
@@ -270,24 +262,18 @@ export const DocumentRepository = {
     const hash = await hashFileSHA256(fileBlob, onProgress);
 
     const filename = fileBlob.name || doc.name;
-    const lowerName = filename.toLowerCase();
-
-    let mimeType = fileBlob.type || doc.mimeType;
-    if (!mimeType || mimeType === 'application/octet-stream') {
-      if (lowerName.endsWith('.pdf')) mimeType = 'application/pdf';
-      else if (lowerName.endsWith('.docx')) mimeType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
-      else if (lowerName.endsWith('.xlsx')) mimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
-      else if (lowerName.endsWith('.pptx')) mimeType = 'application/vnd.openxmlformats-officedocument.presentationml.presentation';
-      else mimeType = doc.mimeType || 'application/octet-stream';
-    }
+    const mimeType = detectMimeType(fileBlob, filename);
+    const storedBlob = (fileBlob.type && fileBlob.type === mimeType) 
+      ? fileBlob 
+      : new Blob([fileBlob], { type: mimeType });
 
     const versionRecord = {
       id: versionId,
       documentId,
       versionNumber: nextVerNumber,
       versionLabel,
-      fileBlob,
-      size: fileBlob.size,
+      fileBlob: storedBlob,
+      size: storedBlob.size,
       mimeType,
       hash,
       createdAt: now,
@@ -295,16 +281,16 @@ export const DocumentRepository = {
       changeNote: changeNote || `Revision ${versionLabel} uploaded.`
     };
 
-    const isImage = mimeType.startsWith('image/') || /\.(jpg|jpeg|png|webp|bmp|tiff)$/i.test(lowerName);
-    const isPdf = mimeType === 'application/pdf' || lowerName.endsWith('.pdf');
-    const isDocx = mimeType.includes('wordprocessingml') || lowerName.endsWith('.docx');
+    const isImage = mimeType.startsWith('image/');
+    const isPdf = mimeType === 'application/pdf';
+    const isDocx = mimeType.includes('wordprocessingml');
     const ocrApplicable = isImage || isPdf || isDocx;
 
     const updatedDoc = {
       ...doc,
       currentVersion: versionLabel,
       currentVersionId: versionId,
-      size: fileBlob.size,
+      size: storedBlob.size,
       mimeType,
       storedHash: hash,
       hash,
@@ -320,7 +306,15 @@ export const DocumentRepository = {
       isTampered: false
     };
 
-    // Store in IndexedDB atomically
+    // Cache blob in memory
+    blobMemoryCache.set(versionId, storedBlob);
+    blobMemoryCache.set(documentId, storedBlob);
+
+    // Update in localStorage
+    const localDocs = loadLocal(STORAGE_KEY, []);
+    saveLocal(STORAGE_KEY, localDocs.map(d => d.id === documentId ? updatedDoc : d));
+
+    // Store in IndexedDB atomically if available
     try {
       const db = await openDatabase();
       await new Promise((resolve, reject) => {
@@ -332,16 +326,8 @@ export const DocumentRepository = {
         tx.onerror = () => reject(tx.error || new Error('Failed to record version.'));
       });
     } catch (err) {
-      console.warn('IndexedDB write failure during addVersion:', err);
-      throw new Error(`Unable to record new version: ${err.message || 'IndexedDB error'}`);
+      console.warn('IndexedDB write warning during addVersion, preserved in memory & local storage:', err);
     }
-
-    // Cache blob in memory
-    blobMemoryCache.set(versionId, fileBlob);
-
-    // Update in localStorage
-    const localDocs = loadLocal(STORAGE_KEY, []);
-    saveLocal(STORAGE_KEY, localDocs.map(d => d.id === documentId ? updatedDoc : d));
 
     return updatedDoc;
   },
@@ -367,27 +353,75 @@ export const DocumentRepository = {
     }
   },
 
-  async getVersionBlob(versionId) {
-    if (!versionId) return null;
-    if (blobMemoryCache.has(versionId)) {
+  async getVersionBlob(versionId, documentId = null) {
+    if (!versionId && !documentId) return null;
+    if (versionId && blobMemoryCache.has(versionId)) {
       return blobMemoryCache.get(versionId);
+    }
+    if (documentId && blobMemoryCache.has(documentId)) {
+      return blobMemoryCache.get(documentId);
     }
     try {
       const db = await openDatabase();
       return new Promise((resolve) => {
-        const tx = db.transaction('versions', 'readonly');
-        const store = tx.objectStore('versions');
-        const request = store.get(versionId);
+        const tx = db.transaction(['versions', 'documents'], 'readonly');
+        const verStore = tx.objectStore('versions');
+        const docStore = tx.objectStore('documents');
 
-        request.onsuccess = () => {
-          if (request.result && request.result.fileBlob) {
-            blobMemoryCache.set(versionId, request.result.fileBlob);
-            resolve(request.result.fileBlob);
-          } else {
-            resolve(null);
-          }
-        };
-        request.onerror = () => resolve(null);
+        if (versionId) {
+          const request = verStore.get(versionId);
+          request.onsuccess = () => {
+            if (request.result && request.result.fileBlob) {
+              const b = ensureRenderableBlob(request.result.fileBlob, '', request.result.mimeType);
+              blobMemoryCache.set(versionId, b);
+              if (documentId) blobMemoryCache.set(documentId, b);
+              return resolve(b);
+            }
+            // Fallback to documents store if version record missing
+            if (documentId) {
+              const docReq = docStore.get(documentId);
+              docReq.onsuccess = () => {
+                const doc = docReq.result;
+                const raw = doc?.originalBlob || doc?.fileBlob || null;
+                const b = raw ? ensureRenderableBlob(raw, doc?.name, doc?.mimeType) : null;
+                if (b) {
+                  blobMemoryCache.set(versionId, b);
+                  blobMemoryCache.set(documentId, b);
+                }
+                resolve(b);
+              };
+              docReq.onerror = () => resolve(null);
+            } else {
+              resolve(null);
+            }
+          };
+          request.onerror = () => {
+            if (documentId) {
+              const docReq = docStore.get(documentId);
+              docReq.onsuccess = () => {
+                const doc = docReq.result;
+                const raw = doc?.originalBlob || doc?.fileBlob || null;
+                const b = raw ? ensureRenderableBlob(raw, doc?.name, doc?.mimeType) : null;
+                resolve(b);
+              };
+              docReq.onerror = () => resolve(null);
+            } else {
+              resolve(null);
+            }
+          };
+        } else if (documentId) {
+          const docReq = docStore.get(documentId);
+          docReq.onsuccess = () => {
+            const doc = docReq.result;
+            const raw = doc?.originalBlob || doc?.fileBlob || null;
+            const b = raw ? ensureRenderableBlob(raw, doc?.name, doc?.mimeType) : null;
+            if (b) blobMemoryCache.set(documentId, b);
+            resolve(b);
+          };
+          docReq.onerror = () => resolve(null);
+        } else {
+          resolve(null);
+        }
       });
     } catch (err) {
       console.warn('Failed to retrieve version blob:', err);

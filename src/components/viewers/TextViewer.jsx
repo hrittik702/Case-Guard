@@ -92,7 +92,7 @@ export default function TextViewer({ blob, filename, mimeType, onDownload }) {
     return (
       <div className="flex flex-col items-center justify-center p-12 text-slate-400">
         <Loader2 className="w-8 h-8 animate-spin text-blue-500 mb-2" />
-        <span className="text-xs font-semibold">Reading document text...</span>
+        <span className="text-xs font-medium">Reading document text...</span>
       </div>
     );
   }
@@ -101,7 +101,7 @@ export default function TextViewer({ blob, filename, mimeType, onDownload }) {
     return (
       <div className="flex flex-col items-center justify-center p-12 text-center">
         <AlertCircle className="w-8 h-8 text-red-400 mb-2" />
-        <span className="text-xs font-semibold text-slate-700">{error}</span>
+        <span className="text-xs font-medium text-slate-700">{error}</span>
         {onDownload && (
           <button
             onClick={onDownload}
@@ -116,13 +116,13 @@ export default function TextViewer({ blob, filename, mimeType, onDownload }) {
   }
 
   return (
-    <div className="flex flex-col h-full min-h-0 bg-white overflow-hidden font-mono text-xs">
+    <div className="flex flex-col h-full min-h-0 bg-white overflow-hidden text-xs">
       
       {/* Top Toolbar */}
       <div className="flex items-center justify-between px-3 py-2 bg-slate-50 border-b border-slate-200 text-slate-600">
         <div className="flex items-center space-x-3">
           <span className="text-slate-700 font-sans font-medium text-xs">
-            {lines.length} {lines.length === 1 ? 'line' : 'lines'} • {(blob?.size / 1024).toFixed(1)} KB
+            <span className="font-mono text-xs">{lines.length}</span> {lines.length === 1 ? 'line' : 'lines'} • <span className="font-mono text-xs">{(blob?.size / 1024).toFixed(1)} KB</span>
           </span>
           <div className="relative">
             <Search className="w-3.5 h-3.5 absolute left-2 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -131,10 +131,10 @@ export default function TextViewer({ blob, filename, mimeType, onDownload }) {
               placeholder="Find in text..."
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
-              className="pl-7 pr-7 py-1 bg-white border border-slate-300 rounded text-slate-800 placeholder-slate-400 text-xs w-36 focus:w-48 focus:outline-none focus:border-blue-500 transition-all"
+              className="pl-7 pr-7 py-1 bg-white border border-slate-300 rounded text-slate-800 placeholder-slate-400 text-xs w-36 focus:w-48 focus:outline-none focus:border-blue-500 transition-all font-sans"
             />
             {searchQuery && (
-              <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-slate-500 font-sans">
+              <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-slate-500 font-mono">
                 {matchCount}
               </span>
             )}
@@ -154,18 +154,18 @@ export default function TextViewer({ blob, filename, mimeType, onDownload }) {
 
           <button
             onClick={handleCopy}
-            className="inline-flex items-center space-x-1 px-2.5 py-1 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded transition-colors text-xs shadow-2xs"
+            className="inline-flex items-center space-x-1 px-2.5 py-1 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded transition-colors text-xs font-medium shadow-2xs"
             title="Copy Text to Clipboard"
           >
             {copied ? (
               <>
                 <Check className="w-3.5 h-3.5 text-emerald-600" />
-                <span className="text-emerald-700 font-sans text-[11px] font-medium">Copied</span>
+                <span className="text-emerald-700 text-xs font-medium">Copied</span>
               </>
             ) : (
               <>
                 <Copy className="w-3.5 h-3.5 text-slate-500" />
-                <span className="font-sans text-[11px] font-medium">Copy</span>
+                <span className="text-xs font-medium">Copy</span>
               </>
             )}
           </button>
@@ -175,14 +175,14 @@ export default function TextViewer({ blob, filename, mimeType, onDownload }) {
       {/* Editor / Text Content Body */}
       <div className="flex-1 min-h-0 overflow-auto flex select-text bg-white">
         {/* Line Numbers */}
-        <div className="py-3 px-3 bg-slate-50 select-none text-right text-slate-400 border-r border-slate-200 shrink-0 font-mono text-[11px] leading-5">
+        <div className="py-3 px-3 bg-slate-50 select-none text-right text-slate-400 border-r border-slate-200 shrink-0 font-mono text-xs leading-5">
           {lines.map((_, i) => (
             <div key={i}>{i + 1}</div>
           ))}
         </div>
 
         {/* Text Area */}
-        <div className={`flex-1 p-3 text-slate-800 font-mono text-[11px] leading-5 overflow-x-auto ${wordWrap ? 'whitespace-pre-wrap break-words' : 'whitespace-pre'}`}>
+        <div className={`flex-1 p-3 text-slate-800 font-mono text-xs leading-5 overflow-x-auto ${wordWrap ? 'whitespace-pre-wrap break-words' : 'whitespace-pre'}`}>
           {searchQuery ? (
             lines.map((line, lineIdx) => {
               if (!line) return <div key={lineIdx}>&nbsp;</div>;
@@ -201,7 +201,7 @@ export default function TextViewer({ blob, filename, mimeType, onDownload }) {
                   parts.push(line.substring(lastIdx, matchIdx));
                 }
                 parts.push(
-                  <mark key={matchIdx} className="bg-yellow-200 text-yellow-950 font-bold px-0.5 rounded">
+                  <mark key={matchIdx} className="bg-yellow-200 text-yellow-950 font-medium px-0.5 rounded">
                     {line.substring(matchIdx, matchIdx + q.length)}
                   </mark>
                 );

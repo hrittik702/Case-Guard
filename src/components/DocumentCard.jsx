@@ -69,7 +69,7 @@ export default function DocumentCard({
         {/* Classification Tag Overlay */}
         {doc.classification && (
           <div className="absolute top-2 left-2 pointer-events-none">
-            <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded shadow-2xs border ${
+            <span className={`text-[11px] font-medium px-2 py-0.5 rounded shadow-2xs border ${
               doc.classification === 'Top Secret' ? 'bg-red-900/90 text-red-100 border-red-700' :
               doc.classification === 'Secret' ? 'bg-amber-900/90 text-amber-100 border-amber-700' :
               'bg-slate-900/80 text-white border-slate-700'
@@ -174,15 +174,15 @@ export default function DocumentCard({
         <div>
           {/* Filename */}
           <h3 
-            className="text-xs font-bold text-slate-900 group-hover:text-blue-600 transition-colors truncate"
+            className="text-[15px] font-semibold text-slate-900 group-hover:text-blue-600 transition-colors truncate"
             title={doc.name}
           >
             {doc.name}
           </h3>
 
           {/* Case & Type */}
-          <div className="flex items-center space-x-1.5 text-[11px] text-slate-500 mt-1 truncate">
-            <span className="font-mono text-blue-700 font-semibold shrink-0">
+          <div className="flex items-center space-x-1.5 text-[13px] text-slate-500 mt-1 truncate font-normal">
+            <span className="font-mono text-xs text-blue-700 font-medium shrink-0">
               #{doc.caseId}
             </span>
             <span>·</span>
@@ -193,31 +193,31 @@ export default function DocumentCard({
         </div>
 
         {/* Status, Version, and Date Row */}
-        <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[10px]">
+        <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs">
           {/* Integrity / OCR Status */}
           <div className="flex items-center space-x-1.5">
             {doc.isTampered ? (
-              <span className="inline-flex items-center space-x-0.5 text-red-700 font-bold bg-red-50 border border-red-200 px-1.5 py-0.2 rounded-full">
-                <AlertTriangle className="w-2.5 h-2.5 text-red-600" />
+              <span className="inline-flex items-center space-x-0.5 text-red-700 font-medium bg-red-50 border border-red-200 px-2 py-0.5 rounded-full text-xs">
+                <AlertTriangle className="w-3 h-3 text-red-600" />
                 <span>Mismatch</span>
               </span>
             ) : (
-              <span className="inline-flex items-center space-x-0.5 text-emerald-800 font-medium bg-emerald-50 border border-emerald-200 px-1.5 py-0.2 rounded-full">
-                <CheckCircle2 className="w-2.5 h-2.5 text-emerald-600" />
+              <span className="inline-flex items-center space-x-0.5 text-emerald-800 font-medium bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full text-xs">
+                <CheckCircle2 className="w-3 h-3 text-emerald-600" />
                 <span>Verified</span>
               </span>
             )}
 
             {isOcrRunning && (
-              <span className="inline-flex items-center text-amber-700 bg-amber-50 px-1 rounded border border-amber-200 font-mono animate-pulse" title="OCR Running">
-                <Loader2 className="w-2.5 h-2.5 animate-spin" />
+              <span className="inline-flex items-center text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200 font-mono text-xs animate-pulse font-medium" title="OCR Running">
+                <Loader2 className="w-3 h-3 animate-spin" />
               </span>
             )}
           </div>
 
           {/* Version and Date */}
-          <div className="flex items-center space-x-1.5 text-slate-400 font-mono">
-            <span className="bg-slate-100 text-slate-600 px-1 rounded border border-slate-200">
+          <div className="flex items-center space-x-1.5 text-slate-400 font-mono text-xs font-normal">
+            <span className="bg-slate-100 text-slate-600 px-1.5 py-0.2 rounded border border-slate-200 font-medium">
               {doc.currentVersion || 'v1'}
             </span>
             <span>{formattedDate}</span>

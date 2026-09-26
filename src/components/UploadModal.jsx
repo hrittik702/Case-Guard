@@ -322,10 +322,10 @@ export default function UploadModal({
               <Upload className="w-4 h-4" />
             </div>
             <div>
-              <h2 className="text-sm font-bold text-slate-900">
+              <h2 className="text-lg font-semibold text-slate-900 tracking-tight">
                 {isNewVersionMode ? 'Upload New Revision' : 'Upload Legal / Investigation Document'}
               </h2>
-              <div className="flex items-center space-x-2 text-[11px] text-slate-500">
+              <div className="flex items-center space-x-2 text-xs text-slate-500 font-normal">
                 <span>Stored in browser IndexedDB</span>
                 <span>•</span>
                 <span className="font-mono text-blue-600 font-medium">Digital Integrity Seal</span>
@@ -345,12 +345,12 @@ export default function UploadModal({
 
         {/* Origin / Security Context Notice Banner if non-secure origin */}
         {!cryptoInfo.isSecureContext && (
-          <div className="px-6 py-2 bg-amber-50 border-b border-amber-200 flex items-center justify-between text-[11px] text-amber-800 shrink-0">
+          <div className="px-6 py-2 bg-amber-50 border-b border-amber-200 flex items-center justify-between text-xs text-amber-800 shrink-0">
             <div className="flex items-center space-x-2">
               <Info className="w-3.5 h-3.5 text-amber-600 shrink-0" />
               <span>Running in non-secure origin. Active: <strong>{cryptoInfo.provider}</strong></span>
             </div>
-            <span className="font-mono text-[10px] bg-amber-100 px-1.5 py-0.5 rounded text-amber-900">
+            <span className="font-mono text-xs bg-amber-100 px-1.5 py-0.5 rounded text-amber-900 font-medium">
               100% Cryptographic Fidelity
             </span>
           </div>
@@ -366,10 +366,10 @@ export default function UploadModal({
                 <div className="flex items-center space-x-2.5">
                   <CheckCircle2 className="w-6 h-6 text-emerald-600 shrink-0" />
                   <div>
-                    <h3 className="font-bold text-emerald-950 text-sm">
+                    <h3 className="font-semibold text-emerald-950 text-sm">
                       {isNewVersionMode ? 'Revision Uploaded Successfully' : 'Document Ingested Successfully'}
                     </h3>
-                    <p className="text-emerald-700 text-xs">
+                    <p className="text-emerald-700 text-xs font-normal">
                       The file payload has been securely anchored into local storage with its immutable cryptographic seal.
                     </p>
                   </div>
@@ -379,28 +379,28 @@ export default function UploadModal({
                 <div className="bg-white/90 border border-emerald-200/80 rounded-lg p-3 space-y-2 text-xs">
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <span className="text-slate-400 text-[10px] uppercase font-bold block">Document:</span>
-                      <strong className="text-slate-900 truncate block">{completedDoc.name}</strong>
+                      <span className="text-slate-400 text-[11px] uppercase font-medium block">Document:</span>
+                      <strong className="text-slate-900 font-semibold truncate block text-xs">{completedDoc.name}</strong>
                     </div>
                     <div>
-                      <span className="text-slate-400 text-[10px] uppercase font-bold block">Version:</span>
-                      <span className="font-mono text-blue-700 font-bold">{completedDoc.currentVersion || 'V1'}</span>
+                      <span className="text-slate-400 text-[11px] uppercase font-medium block">Version:</span>
+                      <span className="font-mono text-blue-700 font-medium text-xs">{completedDoc.currentVersion || 'V1'}</span>
                     </div>
                     <div>
-                      <span className="text-slate-400 text-[10px] uppercase font-bold block">Size:</span>
-                      <span className="text-slate-700">{(completedDoc.size / 1024).toFixed(1)} KB ({completedDoc.size} bytes)</span>
+                      <span className="text-slate-400 text-[11px] uppercase font-medium block">Size:</span>
+                      <span className="text-slate-700 font-mono text-xs">{(completedDoc.size / 1024).toFixed(1)} KB ({completedDoc.size} bytes)</span>
                     </div>
                     <div>
-                      <span className="text-slate-400 text-[10px] uppercase font-bold block">Case:</span>
-                      <span className="font-mono text-slate-800">#{completedDoc.caseId}</span>
+                      <span className="text-slate-400 text-[11px] uppercase font-medium block">Case:</span>
+                      <span className="font-mono text-slate-800 text-xs font-medium">#{completedDoc.caseId}</span>
                     </div>
                   </div>
 
                   <div className="pt-2 border-t border-slate-100">
-                    <span className="text-slate-400 text-[10px] uppercase font-bold block mb-1">
+                    <span className="text-slate-400 text-[11px] uppercase font-medium block mb-1">
                       Computed Digital Fingerprint:
                     </span>
-                    <div className="flex items-center justify-between bg-slate-50 border border-slate-200 rounded p-1.5 font-mono text-[11px] text-slate-900 break-all select-all">
+                    <div className="flex items-center justify-between bg-slate-50 border border-slate-200 rounded p-1.5 font-mono text-xs font-medium text-slate-900 break-all select-all">
                       <span className="truncate mr-2">
                         {completedDoc.storedHash ? `${completedDoc.storedHash.slice(0, 16)}••••••••••••••••${completedDoc.storedHash.slice(-8)}` : 'Verified'}
                       </span>
@@ -433,14 +433,14 @@ export default function UploadModal({
               <div className="flex items-start space-x-2.5">
                 <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
                 <div>
-                  <h4 className="font-bold text-amber-950 text-xs">Duplicate Document Detected</h4>
-                  <p className="text-amber-800 text-[11px] mt-1 leading-relaxed">
+                  <h4 className="font-semibold text-amber-950 text-xs">Duplicate Document Detected</h4>
+                  <p className="text-amber-800 text-xs font-normal mt-1 leading-relaxed">
                     {duplicateInfo.message}
                   </p>
                 </div>
               </div>
 
-              <div className="bg-white/80 border border-amber-200 rounded-lg p-2.5 space-y-1 font-mono text-[11px] text-slate-700">
+              <div className="bg-white/80 border border-amber-200 rounded-lg p-2.5 space-y-1 font-mono text-xs font-medium text-slate-700">
                 <div><strong>Existing:</strong> {duplicateInfo.existingDoc.name} ({duplicateInfo.existingDoc.currentVersion})</div>
                 <div className="truncate"><strong>Digital Fingerprint:</strong> {duplicateInfo.existingDoc.storedHash ? `${duplicateInfo.existingDoc.storedHash.slice(0, 16)}••••••••••••••••${duplicateInfo.existingDoc.storedHash.slice(-8)}` : 'Anchored'}</div>
               </div>
@@ -471,13 +471,13 @@ export default function UploadModal({
               <Loader2 className="w-8 h-8 animate-spin text-blue-600 mx-auto" />
               
               <div className="space-y-1">
-                <h4 className="font-bold text-slate-900 text-xs">
+                <h4 className="font-semibold text-slate-900 text-xs">
                   {status === UPLOAD_STATES.VALIDATING && 'Validating document specs & integrity bounds...'}
                   {status === UPLOAD_STATES.HASHING && 'Generating digital integrity fingerprint from file bytes...'}
                   {status === UPLOAD_STATES.STORING && 'Securely storing document in local IndexedDB...'}
                   {status === UPLOAD_STATES.PROCESSING && 'Preparing cryptographic audit records...'}
                 </h4>
-                <p className="text-[11px] text-slate-500">
+                <p className="text-xs text-slate-500 font-normal">
                   {selectedFile ? `${selectedFile.name} (${(selectedFile.size / 1024).toFixed(1)} KB)` : 'Processing...'}
                 </p>
               </div>
@@ -491,7 +491,7 @@ export default function UploadModal({
                       style={{ width: `${Math.max(5, Math.round(hashProgress * 100))}%` }}
                     />
                   </div>
-                  <div className="flex justify-between text-[10px] text-slate-400 font-mono">
+                  <div className="flex justify-between text-xs text-slate-400 font-mono">
                     <span>Engine: {cryptoInfo.provider}</span>
                     <span>{Math.round(hashProgress * 100)}%</span>
                   </div>
@@ -527,26 +527,26 @@ export default function UploadModal({
                 {selectedFile ? (
                   <div className="space-y-1">
                     <div className="flex items-center justify-center space-x-2">
-                      <span className="font-bold text-slate-900 block text-xs truncate max-w-xs">
+                      <span className="font-semibold text-slate-900 block text-xs truncate max-w-xs">
                         {selectedFile.name}
                       </span>
                       {fileInfo && (
-                        <span className="text-[10px] px-1.5 py-0.2 rounded font-mono bg-blue-100 text-blue-800 font-semibold">
+                        <span className="text-[10px] px-1.5 py-0.5 rounded font-mono bg-blue-100 text-blue-800 font-medium">
                           {fileInfo.label}
                         </span>
                       )}
                     </div>
-                    <span className="text-[11px] text-slate-500 block">
-                      Size: {(selectedFile.size / 1024).toFixed(1)} KB ({selectedFile.size} bytes) • {selectedFile.type || 'Binary Document'}
+                    <span className="text-xs text-slate-500 font-normal block">
+                      Size: <span className="font-mono">{(selectedFile.size / 1024).toFixed(1)} KB</span> ({selectedFile.size} bytes) • {selectedFile.type || 'Binary Document'}
                     </span>
-                    <span className="text-[10px] text-blue-600 underline font-medium">Click to change file</span>
+                    <span className="text-xs text-blue-600 underline font-medium">Click to change file</span>
                   </div>
                 ) : (
                   <div>
-                    <span className="font-bold text-slate-800 block text-xs">
+                    <span className="font-semibold text-slate-800 block text-xs">
                       Choose file or drag and drop here
                     </span>
-                    <span className="text-[11px] text-slate-500 block mt-1">
+                    <span className="text-xs text-slate-500 font-normal block mt-1">
                       Supports PDF, DOCX, XLSX, PPTX, Images, Video, Audio, Text, and Archives (Max: 50 MB)
                     </span>
                   </div>
@@ -555,7 +555,7 @@ export default function UploadModal({
 
               {/* Error Message */}
               {errorMessage && (
-                <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-800 text-[11px] flex items-center space-x-2">
+                <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-800 text-xs font-normal flex items-center space-x-2">
                   <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
                   <span>{errorMessage}</span>
                 </div>
@@ -565,12 +565,12 @@ export default function UploadModal({
               {!isNewVersionMode && (
                 <>
                   <div>
-                    <label className="text-slate-700 block mb-1 font-semibold">Associated Case:</label>
+                    <label className="text-slate-700 block mb-1 font-medium text-xs">Associated Case:</label>
                     {cases.length > 0 ? (
                       <select
                         value={selectedCaseId}
                         onChange={(e) => setSelectedCaseId(e.target.value)}
-                        className="w-full bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer"
+                        className="w-full bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 text-sm font-normal text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer"
                       >
                         {cases.map(c => (
                           <option key={c.id} value={c.caseNumber || c.id}>
@@ -579,14 +579,14 @@ export default function UploadModal({
                         ))}
                       </select>
                     ) : (
-                      <div className="text-[11px] text-amber-700 bg-amber-50 p-2.5 rounded border border-amber-200">
+                      <div className="text-xs text-amber-700 bg-amber-50 p-2.5 rounded border border-amber-200">
                         No cases created yet. Enter a case identifier:
                         <input
                           type="text"
                           placeholder="e.g. CR-2026-001"
                           value={selectedCaseId}
                           onChange={(e) => setSelectedCaseId(e.target.value)}
-                          className="mt-1 w-full bg-white border border-amber-300 rounded px-2 py-1 text-slate-900 font-mono"
+                          className="mt-1 w-full bg-white border border-amber-300 rounded px-2 py-1 text-slate-900 font-mono text-xs"
                         />
                       </div>
                     )}
@@ -594,11 +594,11 @@ export default function UploadModal({
 
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="text-slate-700 block mb-1 font-semibold">Security Clearance:</label>
+                      <label className="text-slate-700 block mb-1 font-medium text-xs">Security Clearance:</label>
                       <select
                         value={classification}
                         onChange={(e) => setClassification(e.target.value)}
-                        className="w-full bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        className="w-full bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 text-sm font-normal text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
                       >
                         <option value="Confidential">Confidential</option>
                         <option value="Secret">Secret</option>
@@ -608,11 +608,11 @@ export default function UploadModal({
                     </div>
 
                     <div>
-                      <label className="text-slate-700 block mb-1 font-semibold">Category:</label>
+                      <label className="text-slate-700 block mb-1 font-medium text-xs">Category:</label>
                       <select
                         value={category}
                         onChange={(e) => setCategory(e.target.value)}
-                        className="w-full bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        className="w-full bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 text-sm font-normal text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
                       >
                         <option value="Investigation Record">Investigation Record</option>
                         <option value="FIR">First Information Report</option>
@@ -629,13 +629,13 @@ export default function UploadModal({
               {/* Change Note (for revisions) */}
               {isNewVersionMode && (
                 <div>
-                  <label className="text-slate-700 block mb-1 font-semibold">Revision Change Note:</label>
+                  <label className="text-slate-700 block mb-1 font-medium text-xs">Revision Change Note:</label>
                   <input
                     type="text"
                     placeholder="e.g. Updated witness deposition or revised forensic analysis"
                     value={changeNote}
                     onChange={(e) => setChangeNote(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-1.5 text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-1.5 text-sm font-normal text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
                   />
                 </div>
               )}
@@ -645,14 +645,14 @@ export default function UploadModal({
                 <button
                   type="button"
                   onClick={onClose}
-                  className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3.5 py-2 rounded-lg font-medium transition-colors"
+                  className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3.5 py-2 rounded-lg font-medium text-xs transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={!selectedFile}
-                  className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white px-4 py-2 rounded-lg font-semibold shadow-xs transition-colors flex items-center space-x-1.5 cursor-pointer"
+                  className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white px-4 py-2 rounded-lg font-semibold text-xs shadow-xs transition-colors flex items-center space-x-1.5 cursor-pointer"
                 >
                   <span>{isNewVersionMode ? 'Anchor Revision' : 'Upload & Anchor'}</span>
                   <ArrowRight className="w-3.5 h-3.5" />

@@ -39,29 +39,29 @@ export default function UnsupportedFileViewer({
             {isLegacy ? <Lock className="w-6 h-6" /> : <FileQuestion className="w-6 h-6" />}
           </div>
           <div className="min-w-0 flex-1">
-            <span className="inline-block px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase tracking-wider bg-slate-800 text-slate-300 mb-1">
+            <span className="inline-block px-2 py-0.5 rounded text-[10px] font-mono font-medium uppercase tracking-wider bg-slate-800 text-slate-300 mb-1">
               {ext || 'BINARY'}
             </span>
-            <h3 className="font-semibold text-white text-sm truncate" title={filename}>
+            <h3 className="font-semibold text-white text-[15px] truncate" title={filename}>
               {filename || 'Evidence File'}
             </h3>
-            <p className="text-xs text-slate-400 mt-0.5">
-              {formatBytes(fileSize)} • {mimeType || 'application/octet-stream'}
+            <p className="text-xs text-slate-400 mt-0.5 font-normal">
+              <span className="font-mono text-xs">{formatBytes(fileSize)}</span> • <span className="font-mono text-xs">{mimeType || 'application/octet-stream'}</span>
             </p>
           </div>
         </div>
 
         {/* Honest Fallback Explanation */}
         <div className="p-3.5 bg-slate-900 border border-slate-800 rounded-xl space-y-2 text-xs">
-          <div className="flex items-center space-x-1.5 text-amber-400 font-semibold text-[11px] uppercase tracking-wide">
+          <div className="flex items-center space-x-1.5 text-amber-400 font-medium text-xs uppercase tracking-wide">
             <Info className="w-3.5 h-3.5" />
             <span>{isLegacy ? 'Legacy Binary Format' : 'Native Preview Unavailable'}</span>
           </div>
 
-          <p className="text-slate-300 leading-relaxed text-[11px]">
+          <p className="text-slate-300 leading-relaxed text-xs font-normal">
             {isLegacy ? (
               <>
-                In-browser parsing is strictly supported for modern OpenXML formats (<code className="text-blue-400">.docx</code>, <code className="text-blue-400">.pptx</code>). Legacy binary Microsoft Office files (<code className="text-amber-300">.{ext.toLowerCase()}</code>) require desktop software to ensure forensic fidelity.
+                In-browser parsing is strictly supported for modern OpenXML formats (<code className="text-blue-400 font-mono text-xs">.docx</code>, <code className="text-blue-400 font-mono text-xs">.pptx</code>). Legacy binary Microsoft Office files (<code className="text-amber-300 font-mono text-xs">.{ext.toLowerCase()}</code>) require desktop software to ensure forensic fidelity.
               </>
             ) : (
               <>
@@ -72,7 +72,7 @@ export default function UnsupportedFileViewer({
         </div>
 
         {/* Security & Integrity Note */}
-        <div className="flex items-center space-x-2 text-[11px] text-emerald-400 bg-emerald-950/20 border border-emerald-500/20 px-3 py-2 rounded-lg">
+        <div className="flex items-center space-x-2 text-xs text-emerald-400 bg-emerald-950/20 border border-emerald-500/20 px-3 py-2 rounded-lg font-normal">
           <ShieldCheck className="w-4 h-4 shrink-0 text-emerald-400" />
           <span>File payload is tamper-verified and ready for offline investigation.</span>
         </div>
@@ -81,7 +81,7 @@ export default function UnsupportedFileViewer({
         {onDownload && (
           <button
             onClick={onDownload}
-            className="w-full flex items-center justify-center space-x-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs py-2.5 px-4 rounded-xl shadow-lg shadow-blue-500/10 transition-colors"
+            className="w-full flex items-center justify-center space-x-2 bg-blue-600 hover:bg-blue-500 text-white font-medium text-xs py-2.5 px-4 rounded-xl shadow-lg shadow-blue-500/10 transition-colors"
           >
             <Download className="w-4 h-4" />
             <span>Download Original File ({formatBytes(fileSize)})</span>

@@ -30,11 +30,11 @@ export default function Toast({ toasts, onDismiss }) {
 
             <div className="flex-1 min-w-0">
               {toast.title && (
-                <div className="text-xs font-bold text-slate-900 leading-tight">
+                <div className="text-xs font-semibold text-slate-900 leading-tight">
                   {toast.title}
                 </div>
               )}
-              <div className="text-xs text-slate-600 mt-0.5 leading-snug">
+              <div className="text-xs text-slate-600 mt-0.5 leading-snug font-normal">
                 {toast.message}
               </div>
             </div>

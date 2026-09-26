@@ -112,11 +112,22 @@ export default function DocumentWorkspace({
 
     setLoadingBlob(true);
 
-    // 1. Fetch file blob from IndexedDB
-    DocumentRepository.getVersionBlob(doc.currentVersionId)
+    // Fast path: if doc already has originalBlob or fileBlob attached in memory
+    if (doc.originalBlob instanceof Blob) {
+      setBlob(doc.originalBlob);
+      setLoadingBlob(false);
+    } else if (doc.fileBlob instanceof Blob) {
+      setBlob(doc.fileBlob);
+      setLoadingBlob(false);
+    }
+
+    // 1. Fetch file blob from IndexedDB (with document fallback)
+    DocumentRepository.getVersionBlob(doc.currentVersionId, doc.id)
       .then(b => {
         if (isMounted) {
-          setBlob(b);
+          if (b) {
+            setBlob(b);
+          }
           setLoadingBlob(false);
         }
       })
@@ -253,15 +264,15 @@ export default function DocumentWorkspace({
           <div className="h-4 w-px bg-slate-200 hidden sm:block"></div>
 
           <div className="min-w-0">
-            <h1 className="text-xs sm:text-sm font-bold text-slate-900 truncate leading-tight" title={doc.name}>
+            <h1 className="text-[15px] sm:text-base font-semibold text-slate-900 truncate leading-tight" title={doc.name}>
               {doc.name}
             </h1>
-            <div className="flex items-center space-x-1.5 text-[10px] text-slate-500 font-mono leading-none mt-0.5">
-              <span className="text-blue-700 font-bold">#{doc.caseId}</span>
+            <div className="flex items-center space-x-1.5 text-xs text-slate-500 font-normal leading-none mt-0.5">
+              <span className="text-blue-700 font-mono font-medium">#{doc.caseId}</span>
               <span>•</span>
-              <span>{doc.type || fileInfo.label}</span>
+              <span className="text-[13px]">{doc.type || fileInfo.label}</span>
               <span>•</span>
-              <span className="bg-slate-100 px-1 rounded border border-slate-200 text-slate-600">
+              <span className="bg-slate-100 px-1 py-0.5 rounded border border-slate-200 text-slate-600 font-mono text-[11px] font-medium">
                 {doc.currentVersion || 'v1'}
               </span>
             </div>
@@ -272,9 +283,9 @@ export default function DocumentWorkspace({
         <div className="flex items-center space-x-1.5 sm:space-x-2 shrink-0">
           
           {/* Quick Integrity Pill */}
-          <div className="hidden md:flex items-center space-x-1 px-2 py-0.5 rounded text-[11px] font-semibold border bg-slate-50">
+          <div className="hidden md:flex items-center space-x-1 px-2 py-0.5 rounded text-[11px] font-medium border bg-slate-50">
             {doc.isTampered ? (
-              <span className="text-red-700 flex items-center gap-1 font-bold">
+              <span className="text-red-700 flex items-center gap-1 font-medium">
                 <AlertTriangle className="w-3.5 h-3.5 text-red-600" />
                 <span>Mismatch</span>
               </span>
@@ -398,11 +409,12 @@ export default function DocumentWorkspace({
       {/* Main Workspace Body: Actual Document Center + Floating Information Drawer */}
       <div className="flex-1 min-h-0 flex relative overflow-hidden bg-slate-100">
         
-        {/* CENTER: Actual Document Viewer Canvas (Dominates 100% of viewport, never compressed) */}
-        <div className="flex-1 min-h-0 h-full flex flex-col relative overflow-hidden">
+        {/* CENTER: Actual Document Viewer Canvas */}
+        <div className="flex-1 min-h-0 min-w-0 h-full flex flex-col relative overflow-hidden">
           <DocumentViewer
             document={doc}
             blob={blob}
+            loading={loadingBlob}
             onDownload={() => onDownload && onDownload(doc, blob)}
             onVerifyIntegrity={() => onVerifyIntegrity && onVerifyIntegrity(doc)}
           />
@@ -411,7 +423,7 @@ export default function DocumentWorkspace({
         {/* RIGHT DRAWER: Floating Document Information & Management Panel */}
         {drawerOpen && (
           <>
-            {/* Subtle backdrop overlay so document is not compressed */}
+            {/* Subtle backdrop overlay with blur */}
             <div 
               className="absolute inset-0 z-30 bg-slate-900/10 backdrop-blur-[2px] transition-opacity animate-in fade-in duration-150" 
               onClick={() => setDrawerOpen(false)}
@@ -423,7 +435,7 @@ export default function DocumentWorkspace({
             <div className="px-4 py-3 border-b border-slate-200 flex items-center justify-between shrink-0 bg-slate-50/80">
               <div className="flex items-center space-x-2">
                 <Info className="w-4 h-4 text-blue-600" />
-                <span className="font-bold text-xs text-slate-900">Document Inspector</span>
+                <span className="font-semibold text-sm text-slate-900">Document Inspector</span>
               </div>
               <button
                 onClick={() => setDrawerOpen(false)}
@@ -447,9 +459,9 @@ export default function DocumentWorkspace({
                 <button
                   key={t.id}
                   onClick={() => setDrawerTab(t.id)}
-                  className={`py-2 px-2 font-semibold border-b-2 whitespace-nowrap transition-colors ${
+                  className={`py-2 px-2.5 text-xs font-medium border-b-2 whitespace-nowrap transition-colors ${
                     drawerTab === t.id
-                      ? 'border-blue-600 text-blue-700 bg-white shadow-2xs'
+                      ? 'border-blue-600 text-blue-700 bg-white shadow-2xs font-semibold'
                       : 'border-transparent text-slate-500 hover:text-slate-800'
                   }`}
                 >
@@ -465,51 +477,51 @@ export default function DocumentWorkspace({
               {drawerTab === 'details' && (
                 <div className="space-y-3.5">
                   <div className="bg-slate-50 border border-slate-200 rounded-lg p-3 space-y-2">
-                    <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                    <span className="text-xs font-medium text-slate-500 uppercase tracking-wider">
                       Metadata
                     </span>
-                    <div className="space-y-1.5 pt-1">
+                    <div className="space-y-1.5 pt-1 text-[13px]">
                       <div className="flex justify-between py-1 border-b border-slate-200/60">
-                        <span className="text-slate-500">Case Docket</span>
-                        <span className="font-mono font-bold text-blue-700">#{doc.caseId}</span>
+                        <span className="text-slate-500 font-normal">Case Docket</span>
+                        <span className="font-mono font-medium text-blue-700 text-xs">#{doc.caseId}</span>
                       </div>
                       <div className="flex justify-between py-1 border-b border-slate-200/60">
-                        <span className="text-slate-500">Document Type</span>
-                        <span className="font-semibold text-slate-800">{doc.type || fileInfo.label}</span>
+                        <span className="text-slate-500 font-normal">Document Type</span>
+                        <span className="font-medium text-slate-800">{doc.type || fileInfo.label}</span>
                       </div>
                       <div className="flex justify-between py-1 border-b border-slate-200/60">
-                        <span className="text-slate-500">Classification</span>
-                        <span className="font-semibold text-slate-800">{doc.classification || 'Confidential'}</span>
+                        <span className="text-slate-500 font-normal">Classification</span>
+                        <span className="font-medium text-slate-800">{doc.classification || 'Confidential'}</span>
                       </div>
                       <div className="flex justify-between py-1 border-b border-slate-200/60">
-                        <span className="text-slate-500">File Size</span>
-                        <span className="font-mono text-slate-700">{(doc.size / 1024).toFixed(1)} KB</span>
+                        <span className="text-slate-500 font-normal">File Size</span>
+                        <span className="font-mono text-xs font-medium text-slate-700">{(doc.size / 1024).toFixed(1)} KB</span>
                       </div>
                       <div className="flex justify-between py-1 border-b border-slate-200/60">
-                        <span className="text-slate-500">Current Version</span>
-                        <span className="font-mono font-bold text-blue-600">{doc.currentVersion || 'v1'}</span>
+                        <span className="text-slate-500 font-normal">Current Version</span>
+                        <span className="font-mono text-xs font-medium text-blue-600">{doc.currentVersion || 'v1'}</span>
                       </div>
                       <div className="flex justify-between py-1 border-b border-slate-200/60">
-                        <span className="text-slate-500">Uploaded By</span>
+                        <span className="text-slate-500 font-normal">Uploaded By</span>
                         <span className="text-slate-800 font-medium">{doc.uploadedBy || 'Investigation Officer'}</span>
                       </div>
                       <div className="flex justify-between py-1 border-b border-slate-200/60">
-                        <span className="text-slate-500">Date Added</span>
-                        <span className="text-slate-700">{new Date(doc.createdAt).toLocaleString()}</span>
+                        <span className="text-slate-500 font-normal">Date Added</span>
+                        <span className="text-slate-700 font-normal">{new Date(doc.createdAt).toLocaleString()}</span>
                       </div>
                       <div className="flex justify-between py-1">
-                        <span className="text-slate-500">Last Modified</span>
-                        <span className="text-slate-700">{new Date(doc.updatedAt || doc.createdAt).toLocaleString()}</span>
+                        <span className="text-slate-500 font-normal">Last Modified</span>
+                        <span className="text-slate-700 font-normal">{new Date(doc.updatedAt || doc.createdAt).toLocaleString()}</span>
                       </div>
                     </div>
                   </div>
 
                   {doc.description && (
                     <div className="p-3 bg-white border border-slate-200 rounded-lg space-y-1">
-                      <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                      <span className="text-xs font-medium text-slate-500 uppercase tracking-wider">
                         Case Annotation / Remarks
                       </span>
-                      <p className="text-slate-700 text-xs leading-relaxed mt-1">
+                      <p className="text-slate-700 text-sm font-normal leading-relaxed mt-1">
                         {doc.description}
                       </p>
                     </div>
@@ -531,11 +543,11 @@ export default function DocumentWorkspace({
                       ) : (
                         <ShieldCheck className="w-5 h-5 text-emerald-600" />
                       )}
-                      <span className="font-bold text-sm">
+                      <span className="font-semibold text-sm">
                         {doc.isTampered ? 'INTEGRITY MISMATCH' : 'CRYPTOGRAPHIC SEAL VERIFIED'}
                       </span>
                     </div>
-                    <p className="text-xs leading-relaxed opacity-90">
+                    <p className="text-xs font-normal leading-relaxed opacity-90">
                       {doc.isTampered 
                         ? 'Stored digital seal does NOT match calculated bytes in local storage. Evidence has been modified or corrupted.'
                         : 'Authentic bitstream verified against anchored SHA-256 seal under Section 63 BSA.'}
@@ -544,7 +556,7 @@ export default function DocumentWorkspace({
 
                   <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                      <span className="text-xs font-medium text-slate-500 uppercase tracking-wider">
                         Cryptographic Fingerprint (SHA-256)
                       </span>
                       {(doc.storedHash || doc.hash) && (
@@ -553,7 +565,7 @@ export default function DocumentWorkspace({
                             navigator.clipboard.writeText(doc.storedHash || doc.hash);
                             if (addToast) addToast('Copied', 'SHA-256 hash copied to clipboard.', 'success');
                           }}
-                          className="inline-flex items-center space-x-1 text-[11px] text-blue-600 hover:text-blue-800 font-medium cursor-pointer"
+                          className="inline-flex items-center space-x-1 text-xs text-blue-600 hover:text-blue-800 font-medium cursor-pointer"
                           title="Copy SHA-256 hash"
                         >
                           <Copy className="w-3 h-3" />
@@ -561,17 +573,17 @@ export default function DocumentWorkspace({
                         </button>
                       )}
                     </div>
-                    <div className="font-mono text-xs bg-white p-2.5 rounded border border-slate-200 text-slate-800 break-all select-all">
+                    <div className="font-mono text-xs font-medium bg-white p-2.5 rounded border border-slate-200 text-slate-800 break-all select-all">
                       {doc.storedHash || doc.hash || 'Not Anchored'}
                     </div>
-                    <div className="text-[11px] text-slate-500 flex justify-between pt-1">
-                      <span>Legal Status</span>
-                      <span className="font-mono text-emerald-600 font-bold">Anchored (BSA Sec 63)</span>
+                    <div className="text-xs text-slate-500 flex justify-between pt-1">
+                      <span className="font-normal">Legal Status</span>
+                      <span className="font-mono text-emerald-600 font-medium">Anchored (BSA Sec 63)</span>
                     </div>
                     {doc.lastVerified && (
-                      <div className="text-[11px] text-slate-500 flex justify-between">
-                        <span>Last Verified</span>
-                        <span className="text-slate-700">{new Date(doc.lastVerified).toLocaleString()}</span>
+                      <div className="text-xs text-slate-500 flex justify-between">
+                        <span className="font-normal">Last Verified</span>
+                        <span className="font-mono text-slate-700">{new Date(doc.lastVerified).toLocaleString()}</span>
                       </div>
                     )}
                   </div>
@@ -610,10 +622,10 @@ export default function DocumentWorkspace({
               {drawerTab === 'versions' && (
                 <div className="space-y-3">
                   <div className="flex items-center justify-between pb-1">
-                    <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                    <span className="text-xs font-medium text-slate-500 uppercase tracking-wider">
                       Version Lineage ({versions.length})
                     </span>
-                    <span className="text-[10px] text-slate-400 font-mono">Immutable Log</span>
+                    <span className="text-xs text-slate-400 font-mono">Immutable Log</span>
                   </div>
 
                   <div className="space-y-2.5">
@@ -628,27 +640,27 @@ export default function DocumentWorkspace({
                       >
                         <div className="flex items-center justify-between gap-2 mb-1">
                           <div className="flex items-center space-x-1.5">
-                            <span className="font-mono font-bold text-xs text-blue-700 bg-blue-100 px-1.5 py-0.5 rounded">
+                            <span className="font-mono font-medium text-xs text-blue-700 bg-blue-100 px-1.5 py-0.5 rounded">
                               {v.version || `v${versions.length - i}`}
                             </span>
                             {(v.id === doc.currentVersionId || v.version === doc.currentVersion) && (
-                              <span className="text-[9px] bg-blue-600 text-white px-1.5 py-0.2 rounded font-bold">
+                              <span className="text-[10px] bg-blue-600 text-white px-1.5 py-0.5 rounded font-medium">
                                 Current
                               </span>
                             )}
                           </div>
-                          <span className="text-[10px] text-slate-400 font-mono">
+                          <span className="text-xs text-slate-400 font-mono">
                             {new Date(v.createdAt).toLocaleDateString()}
                           </span>
                         </div>
 
-                        <p className="text-xs text-slate-700 leading-snug mt-1">
+                        <p className="text-[13px] font-normal text-slate-700 leading-snug mt-1">
                           {v.changeDescription || 'Evidence modification / version update'}
                         </p>
 
-                        <div className="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
+                        <div className="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500 font-normal">
                           <span>by {v.author || 'Investigation Officer'}</span>
-                          <span className="font-mono">{(v.size / 1024).toFixed(1)} KB</span>
+                          <span className="font-mono text-xs font-medium">{(v.size / 1024).toFixed(1)} KB</span>
                         </div>
                       </div>
                     ))}
@@ -666,12 +678,12 @@ export default function DocumentWorkspace({
               {drawerTab === 'access' && (
                 <div className="space-y-4">
                   <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg space-y-2">
-                    <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                    <span className="text-xs font-medium text-slate-500 uppercase tracking-wider">
                       Active Officer Permissions
                     </span>
                     <div className="flex flex-wrap gap-1.5 pt-1">
                       {(accessCheck.permissions || ['VIEW']).map((p) => (
-                        <span key={p} className="bg-white border border-slate-200 px-2 py-0.5 rounded text-[10px] font-mono text-slate-700 font-bold">
+                        <span key={p} className="bg-white border border-slate-200 px-2 py-0.5 rounded text-[11px] font-mono text-slate-700 font-medium">
                           {p}
                         </span>
                       ))}
@@ -680,7 +692,7 @@ export default function DocumentWorkspace({
 
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                      <span className="text-xs font-medium text-slate-500 uppercase tracking-wider">
                         Delegated Shares ({shares.length})
                       </span>
                       {onOpenShare && (
@@ -697,19 +709,19 @@ export default function DocumentWorkspace({
                       {shares.map((s) => (
                         <div key={s.id} className="p-3 bg-white border border-slate-200 rounded-lg space-y-1.5 shadow-2xs">
                           <div className="flex items-center justify-between">
-                            <span className="font-bold text-xs text-slate-900">
+                            <span className="font-semibold text-xs text-slate-900">
                               {s.recipientName || s.recipientEmail}
                             </span>
-                            <span className="text-[10px] font-mono font-bold bg-indigo-50 text-indigo-700 px-1.5 py-0.2 rounded border border-indigo-200">
+                            <span className="text-[11px] font-mono font-medium bg-indigo-50 text-indigo-700 px-1.5 py-0.5 rounded border border-indigo-200">
                               {s.permission}
                             </span>
                           </div>
-                          <div className="text-[11px] text-slate-500">
+                          <div className="text-xs font-normal text-slate-500">
                             Expires: {s.expiresAt ? new Date(s.expiresAt).toLocaleString() : 'Indefinite'}
                           </div>
                           <button
                             onClick={() => handleRevokeShare(s.id)}
-                            className="mt-1 text-[11px] text-red-600 hover:text-red-700 font-semibold"
+                            className="mt-1 text-xs text-red-600 hover:text-red-700 font-medium"
                           >
                             Revoke Share
                           </button>
@@ -732,14 +744,14 @@ export default function DocumentWorkspace({
                   <div className="flex items-center justify-between pb-1">
                     <div className="flex items-center space-x-1.5">
                       <Sparkles className="w-3.5 h-3.5 text-blue-600" />
-                      <span className="font-bold text-xs text-slate-900">
+                      <span className="font-semibold text-xs text-slate-900">
                         {isOcrRunning ? 'OCR In Progress...' : doc.ocr?.extractedText ? 'OCR Extracted Text' : 'Optical Character Recognition'}
                       </span>
                     </div>
                     {doc.ocr?.extractedText && (
                       <button
                         onClick={handleCopyOcr}
-                        className="inline-flex items-center space-x-1 text-slate-600 hover:text-blue-600 text-xs"
+                        className="inline-flex items-center space-x-1 text-slate-600 hover:text-blue-600 text-xs font-medium"
                       >
                         {copiedOcr ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
                         <span>{copiedOcr ? 'Copied' : 'Copy'}</span>
@@ -805,29 +817,29 @@ export default function DocumentWorkspace({
               {drawerTab === 'activity' && (
                 <div className="space-y-3">
                   <div className="flex items-center justify-between pb-1">
-                    <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                    <span className="text-xs font-medium text-slate-500 uppercase tracking-wider">
                       Document Custody Events
                     </span>
-                    <span className="text-[10px] text-slate-400 font-mono">Section 63 BSA</span>
+                    <span className="text-xs text-slate-400 font-mono">Section 63 BSA</span>
                   </div>
 
                   <div className="space-y-2.5">
                     {auditLogs.map((evt) => (
                       <div key={evt.id} className="p-2.5 bg-slate-50 border border-slate-200 rounded-lg space-y-1">
                         <div className="flex items-center justify-between">
-                          <span className="font-bold text-xs text-slate-800">
+                          <span className="font-semibold text-xs text-slate-800">
                             {evt.action.replace(/_/g, ' ')}
                           </span>
-                          <span className="font-mono text-[10px] text-slate-400">
+                          <span className="font-mono text-xs text-slate-400">
                             {new Date(evt.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                           </span>
                         </div>
-                        <p className="text-[11px] text-slate-600 leading-snug">
+                        <p className="text-[13px] font-normal text-slate-600 leading-snug">
                           {evt.details}
                         </p>
-                        <div className="text-[10px] text-slate-400 flex items-center justify-between pt-0.5">
+                        <div className="text-xs text-slate-400 font-normal flex items-center justify-between pt-0.5">
                           <span>by {evt.actorName || 'System'}</span>
-                          <span className="font-mono text-emerald-600 font-semibold">{evt.result}</span>
+                          <span className="font-mono text-xs font-medium text-emerald-600">{evt.result}</span>
                         </div>
                       </div>
                     ))}

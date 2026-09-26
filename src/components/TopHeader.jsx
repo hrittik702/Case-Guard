@@ -45,7 +45,7 @@ export default function TopHeader({
           <span className="text-slate-900 font-semibold font-mono">CASEGUARD</span>
           <ChevronRight className="w-3.5 h-3.5 text-slate-400 shrink-0" />
           
-          <span className="text-slate-700">
+          <span className={`text-slate-700 ${currentView === 'cases' && selectedCase ? 'font-mono' : ''}`}>
             {currentView === 'cases' && selectedCase ? selectedCase.caseNumber : getViewTitle()}
           </span>
 
@@ -70,12 +70,12 @@ export default function TopHeader({
         >
           <Search className="w-3.5 h-3.5 text-slate-400" />
           <span>Search cases or documents...</span>
-          <kbd className="bg-white border border-slate-300 text-[10px] px-1.5 py-0.5 rounded text-slate-500 font-mono">⌘K</kbd>
+          <kbd className="bg-white border border-slate-300 text-[10px] px-1.5 py-0.5 rounded text-slate-500 font-mono font-medium">⌘K</kbd>
         </button>
 
         {/* Integrity Alert Pill */}
         {integrityAlertCount > 0 && (
-          <div className="flex items-center space-x-1 bg-red-50 text-red-700 border border-red-200 px-2.5 py-1 rounded-lg text-xs font-semibold animate-pulse">
+          <div className="flex items-center space-x-1 bg-red-50 text-red-700 border border-red-200 px-2.5 py-1 rounded-lg text-xs font-medium animate-pulse">
             <AlertTriangle className="w-3.5 h-3.5 text-red-600" />
             <span>{integrityAlertCount} Mismatch</span>
           </div>
@@ -87,10 +87,10 @@ export default function TopHeader({
             {currentRole?.avatar || '👮'}
           </div>
           <div className="text-left">
-            <div className="text-[11px] font-bold text-slate-900 leading-none truncate max-w-[130px]">
+            <div className="text-xs font-semibold text-slate-900 leading-none truncate max-w-[130px]">
               {displayName}
             </div>
-            <div className="text-[9px] font-mono text-slate-500 uppercase mt-0.5 leading-none">
+            <div className="text-[10px] font-mono font-medium text-slate-500 uppercase mt-0.5 leading-none">
               {displayClearance}
             </div>
           </div>
@@ -101,7 +101,7 @@ export default function TopHeader({
           <button
             onClick={onLogout}
             title="Sign out of active session"
-            className="flex items-center space-x-1.5 text-slate-600 hover:text-red-700 hover:bg-red-50 border border-slate-200 hover:border-red-200 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-colors"
+            className="flex items-center space-x-1.5 text-slate-600 hover:text-red-700 hover:bg-red-50 border border-slate-200 hover:border-red-200 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors"
           >
             <LogOut className="w-3.5 h-3.5 text-slate-500 group-hover:text-red-600" />
             <span className="hidden sm:inline">Sign Out</span>
